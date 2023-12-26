@@ -17,7 +17,7 @@ Crées par moi même il permette d'installer des petit ou gros programme, mais a
 
 ## Script Crées
 
-### Héberger sur [git](https://git.foryouhost.fr/tomv)
+### Héberger sur [git.foryouhost.fr](https://git.foryouhost.fr/tomv)
 
 * [new.sh](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/new.sh) | Permet de installer les principaux packages après l'installation d'une **nouvelle machine sous __Linux__**.
 * [speedtest.sh](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/speedtest.sh) | Permet d'installer l'utilitaire `speedtest` de Ookla <sub>(qui est buger)</sub> sur Linux. **→** Fait par Martin Oscar et adapté par moi.
@@ -25,7 +25,8 @@ Crées par moi même il permette d'installer des petit ou gros programme, mais a
 * [massgrave.cmd](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/massgrave.cmd) | Permet de crack Windows, change d'édition de Windows, crack la suite Office. **→** Fait par [massgrave](https://github.com/massgravel) lien de [l'original](https://github.com/massgravel/Microsoft-Activation-Scripts).
 * [user.sh](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/user.sh) | Permet de crée un nouveau utilisateur **(a éxécuter en root)** avec un mot de passe définie ou pas (si c'est pas le cas, ca désactive l'authentification par mdp) et aussi demande si oui ou non on crée une nouvelle pair de clé SSH pour celui ci. Demande aussi si on dois mettre ma clé SSH publique ou une autre dans le fichier 'authorized_keys' pour se connecter avec celle ci. Demande également si on crée un dossier "gitea" dans le répertoire du nouveau utilisateur ainsi que si on dois mettre par défaut l'éditeur de texte `vim` pour git.
 * [startup.sh](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/startup.sh) | Permet de, coupler au 'crontab -e' automatiser le démarrage d'un serveur FiveM a chaque démarrage du VPS. Il crée un screen avec un nom et dedans lance une commande.
-* [docker_install](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/docker_install.sh) | Permet l'installation de Docker dans sa dernière version.
+* [docker_install](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/dockerinstall.sh) | Permet l'installation de Docker dans sa dernière version.
+* [yarn_install](https://git.foryouhost.fr/tomv/AutoScriptBash/src/branch/master/yarninstall.sh) | Permet l'installation de Yarn dans sa dernière version.
 
 ### Héberger sur [get.tomv.ovh](https://get.tomv.ovh/)
 
@@ -35,4 +36,5 @@ Crées par moi même il permette d'installer des petit ou gros programme, mais a
 * [massgrave.cmd](https://get.tomv.ovh/massgrave.cmd) | Permet de crack Windows, change d'édition de Windows, crack la suite Office. **→** Fait par [massgrave](https://github.com/massgravel) lien de [l'original](https://github.com/massgravel/Microsoft-Activation-Scripts).
 * [user.sh](https://get.tomv.ovh/user.sh) | Permet de crée un nouveau utilisateur **(a éxécuter en root)** avec un mot de passe définie ou pas (si c'est pas le cas, ca désactive l'authentification par mdp) et aussi demande si oui ou non on crée une nouvelle pair de clé SSH pour celui ci. Demande aussi si on dois mettre ma clé SSH publique ou une autre dans le fichier 'authorized_keys' pour se connecter avec celle ci. Demande également si on crée un dossier "gitea" dans le répertoire du nouveau utilisateur ainsi que si on dois mettre par défaut l'éditeur de texte `vim` pour git.
 * [startup.sh](https://get.tomv.ovh/startup.sh) | Permet de, coupler au 'crontab -e' automatiser le démarrage d'un serveur FiveM a chaque démarrage du VPS. Il crée un screen avec un nom et dedans lance une commande.
-* [docker_install](https://get.tomv.ovh/docker_install.sh) | Permet l'installation de Docker dans sa dernière version.
+* [docker_install](https://get.tomv.ovh/dockerinstall.sh) | Permet l'installation de Docker dans sa dernière version.
+* [yarn_install](https://get.tomv.ovh/yarninstall.sh) | Permet l'installation de Yarn dans sa dernière version.
