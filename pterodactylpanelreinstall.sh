@@ -58,10 +58,13 @@ mv /tmp/pterodactylpanelreinstall/.env /var/www/pterodactyl/
 ############################################ Build du panel pterodactyl ###################################
 
 # Demander à l'utilisateur de faire l'action "save file"
-read -p "Voulez vous re-build le panel Pterodactyl ? ${BOLD}NON REVERSIBLE${RESET}" response
+read -p "Voulez vous build le panel Pterodactyl ? ${RED}${BOLD}NON REVERSIBLE ${RESET}(${GREEN}Yes/${RED}Non) > ${RESET}" response
 
-# Vérifier si la réponse est "oui"
-if [ "$response" = "oui" ]; then
+# Liste des réponses acceptées, séparées par des espaces
+accepted_responses=("oui" "o" "yes" "y")
+
+# Vérifier si la réponse est dans la liste des réponses acceptées
+if [[ " ${accepted_responses[@]} " =~ " ${response} " ]]; then
     echo "L'utilisateur a répondu 'oui'. Le script continue..."
 else
     echo "Réponse incorrecte. Le script se termine."
