@@ -19,21 +19,50 @@ fi
 
 ######################################### MENU ###########################################################
 
-#!/bin/bash
+### DOSSIER TEMPORAIRE ###
+
+# Définir le chemin du dossier à vérifier
+dossier="/tmp/pterodactylthemeinstaller"
+
+# Vérifier si le dossier existe
+if [ -d "$dossier" ]; then
+    # Vérifier si le dossier est vide
+    if [ -z "$(ls -A $dossier)" ]; then
+        echo "Le dossier existe mais est vide."
+    else
+        # Supprimer le contenu du dossier s'il n'est pas vide
+        rm -r "$dossier"/*
+        echo "Le contenu du dossier a été supprimé avec succès."
+    fi
+else
+    # Créer le dossier s'il n'existe pas
+    mkdir -p "$dossier"
+    echo "Le dossier a été créé avec succès."
+fi
 
 # Fonction pour le choix 1
 choice_one() {
     # Télécharger le fichier ZIP
+    ### DOWNLOAD ###
+
     cd /tmp/pterodactylthemeinstaller
-    wget -O ldjbsz.zip https://files.catbox.moe/ldjbsz.zip
+    wget -O stellar-v3.3.zip https://files.catbox.moe/ldjbsz.zip
+    mv ldjbsz.zip stellar-v3.3.zip
+
+    ### EXTRACT SELECTED FILE ###
+
+    unzip enigma-v39.zip
+    rsync -a --remove-source-files app net resources public tailwind.config.js /var/www/pterodactyl
 
     # Vérifier si le téléchargement a réussi
     if [ -f "ldjbsz.zip" ]; then
         # Extraire les dossiers spécifiques du ZIP
-        unzip ldjbsz.zip 'pterodactyl/app/*' 'database/*' 'resources/*' 'routes/*' -d /var/www/pterodactyl/
+        cd /tmp/pterodactylthemeinstaller
+        unzip enigma-v39.zip
+        rsync -a --remove-source-files pterodactyl/app pterodactyl/net pterodactyl/resources pterodactyl/database pterodactyl/routes /var/www/pterodactyl
 
         # Supprimer le fichier ZIP après l'extraction (si nécessaire)
-        rm ldjbsz.zip
+        rm enigma-v39.zip
     else
         echo "Échec du téléchargement du fichier ZIP."
         exit 1
