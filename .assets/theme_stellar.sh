@@ -49,20 +49,15 @@ choice_one() {
     wget -O stellar-v3.3.zip https://files.catbox.moe/ldjbsz.zip
     mv ldjbsz.zip stellar-v3.3.zip
 
-    ### EXTRACT SELECTED FILE ###
-
-    unzip enigma-v39.zip
-    rsync -a --remove-source-files app net resources public tailwind.config.js /var/www/pterodactyl
-
     # Vérifier si le téléchargement a réussi
     if [ -f "ldjbsz.zip" ]; then
         # Extraire les dossiers spécifiques du ZIP
         cd /tmp/pterodactylthemeinstaller
-        unzip enigma-v39.zip
+        unzip stellar-v3.3.zip
         rsync -a --remove-source-files pterodactyl/app pterodactyl/net pterodactyl/resources pterodactyl/database pterodactyl/routes /var/www/pterodactyl
 
         # Supprimer le fichier ZIP après l'extraction (si nécessaire)
-        rm enigma-v39.zip
+        rm stellar-v3.3.zip
     else
         echo "Échec du téléchargement du fichier ZIP."
         exit 1
