@@ -24,6 +24,7 @@ fi
 # Fonction pour le choix 1
 choice_one() {
     # Télécharger le fichier ZIP
+    cd /tmp/pterodactylthemeinstaller
     wget -O ldjbsz.zip https://anonymfile.com/Wg94/stellar-v33.zip
 
     # Vérifier si le téléchargement a réussi
