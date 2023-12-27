@@ -42,12 +42,12 @@ while true; do
             bash <(curl -s https://raw.githubusercontent.com/LucieFairePy/Pterodactyl-Installer-FR/main/install.sh)
             ;;
         2)
-            echo "Installation du thème Stellar."
+            echo "Installation du thème Stellar v3.3."
             # Ajoutez le code correspondant à l'Option 1 ici
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/PterodactylThemeInstaller/.assets/theme_stellar.sh)
             ;;
         3)
-            echo "Installation du thème Enigma."
+            echo "Installation du thème Enigma v3.9."
             # Ajoutez le code correspondant à l'Option 2 ici
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/PterodactylThemeInstaller/.assets/theme_enigma.sh)
             ;;
