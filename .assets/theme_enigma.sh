@@ -55,7 +55,7 @@ wget -O enigma-v39.zip https://files.catbox.moe/lqxk6x.zip
 echo ""
 echo "${BOLD}Extraction du thème...${RESET}"
 
-unzip enigma-v39.zip >/dev/null 2>&1
+unzip enigma-v39.zip > /dev/null 2>&1
 echo "${BOLD}Déplacement du thème...${RESET}"
 rsync -a --remove-source-files app net resources public tailwind.config.js /var/www/pterodactyl
 echo ""
@@ -66,20 +66,20 @@ cd /var/www/pterodactyl
 
 ## Installation cross-env
 echo "${BOLD}Installation de 'cross-env' via yarn...${RESET}"
-yarn add cross-env >/dev/null 2>&1
+yarn add cross-env > /dev/null 2>&1
 
 ## NPX Installation
 echo "${BOLD}Mise à jour de NPX...${RESET}"
-npx update-browserslist-db@latest >/dev/null 2>&1
+npx update-browserslist-db@latest > /dev/null 2>&1
 
 ### APPLIQUER ###
 
 echo "${BOLD}Application du thème...${RESET}"
-cd /var/www/pterodactyl && php artisan view:clear >/dev/null 2>&1 && php artisan config:clear >/dev/null 2>&1 && chown -R www-data:www-data /var/www/pterodactyl/* 
+cd /var/www/pterodactyl && php artisan view:clear > /dev/null 2>&1 && php artisan config:clear > /dev/null 2>&1 && chown -R www-data:www-data /var/www/pterodactyl/* 
 
 ### BUILD ###
 
 echo "${VIOLET}${BOLD}Re-build du thème en cour...${RESET}"
-yarn build:production >/dev/null 2>&1
+yarn build:production > /dev/null 2>&1
 echo "${GREEN}${BOLD}Build Terminé !.${RESET}"
 echo ""
