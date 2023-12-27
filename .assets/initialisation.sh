@@ -29,8 +29,18 @@ fi
 if ! dpkg -s unzip >/dev/null 2>&1; then
     # Afficher le texte en rouge et en gras
     echo "${BOLD}Le package unzip n'est pas installé. Installation en cours...${RESET}"
-    sudo apt-get update >/dev/null 2>&1
-    sudo apt-get install -y unzip >/dev/null 2>&1
+
+    # Vérifier le gestionnaire de paquets
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y unzip
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y unzip
+    elif command -v brew &> /dev/null; then
+        brew install unzip
+    else
+        echo "Impossible de déterminer le gestionnaire de paquets. Veuillez installer PHP manuellement."
+        exit 1
+    fi
 else
     # Afficher le texte en vert et en gras
     echo "${BOLD}Le package unzip est déjà installé.${RESET}"
