@@ -22,23 +22,35 @@ fi
 # Fonction pour le choix 1
 choice_one() {
 
-    # Selection du dossier d'installation
-    cd /var/www/pterodactyl/
+### DOSSIER TEMPORAIRE ###
 
-    # Télécharger le fichier ZIP
-    wget -O theme.zip https://anonymfile.com/Wg94/stellar-v33.zip
+# Définir le chemin du dossier à vérifier
+dossier="/tmp/PterodactyTheme_Stellar"
 
-    # Vérifier si le téléchargement a réussi
-    if [ -f "theme.zip" ]; then
-        # Extraire le contenu du ZIP
-        unzip theme.zip
-
-        # Supprimer le fichier ZIP après l'extraction (si nécessaire)
-        rm theme.zip
+# Vérifier si le dossier existe
+if [ -d "$dossier" ]; then
+    # Vérifier si le dossier est vide
+    if [ -z "$(ls -A $dossier)" ]; then
+        echo "Le dossier existe mais est vide."
     else
-        echo "Échec du téléchargement du fichier ZIP."
-        exit 1
+        # Supprimer le contenu du dossier s'il n'est pas vide
+        rm -r "$dossier"/*
+        echo "Le contenu du dossier a été supprimé avec succès."
     fi
+else
+    # Créer le dossier s'il n'existe pas
+    mkdir -p "$dossier"
+    echo "Le dossier a été créé avec succès."
+fi
+
+    ### DOWNLOAD ###
+
+    cd /tmp/pterodactylthemeinstaller
+    wget https://anonymfile.com/Wg94/stellar-v33.zip
+
+    ### EXTRACT SELECTED FILE ###
+
+    unzip stellar-v33.zip app database resources routes -d /var/www/pterodactyl/
 
     # Installer react-feather via Yarn
     yarn add react-feather
