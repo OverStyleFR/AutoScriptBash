@@ -30,16 +30,22 @@ dossier="/tmp/pterodactylthemeinstaller"
 if [ -d "$dossier" ]; then
     # Vérifier si le dossier est vide
     if [ -z "$(ls -A $dossier)" ]; then
+        echo ""
         echo "${BOLD}Le dossier existe mais est vide.${RESET}"
+        echo ""
     else
         # Supprimer le contenu du dossier s'il n'est pas vide
         rm -r "$dossier"/*
+        echo ""
         echo "${RED}${BOLD}Le contenu du dossier a été supprimé avec succès.${RESET}"
+        echo ""
     fi
 else
     # Créer le dossier s'il n'existe pas
     mkdir -p "$dossier"
+    echo ""
     echo "${GREEN}${BOLD}Le dossier a été créé avec succès.${RESET}"
+    echo ""
 fi
 
 ### DOWNLOAD ###
