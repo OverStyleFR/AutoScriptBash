@@ -24,8 +24,8 @@ choice_one() {
 
 ### DOSSIER TEMPORAIRE ###
 
-# Définir le chemin du dossier à vérifier
-dossier="/tmp/pterodactylthemeinstaller"
+   # Définir le chemin du dossier à vérifier
+   dossier="/tmp/pterodactylthemeinstaller"
 
 # Vérifier si le dossier existe
 if [ -d "$dossier" ]; then
