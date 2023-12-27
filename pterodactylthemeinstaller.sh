@@ -18,3 +18,4 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Le reste du script ici
+
