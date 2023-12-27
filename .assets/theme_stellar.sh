@@ -25,7 +25,7 @@ fi
 choice_one() {
     # Télécharger le fichier ZIP
     cd /tmp/pterodactylthemeinstaller
-    wget -O ldjbsz.zip https://anonymfile.com/Wg94/stellar-v33.zip
+    wget -O ldjbsz.zip https://files.catbox.moe/ldjbsz.zip
 
     # Vérifier si le téléchargement a réussi
     if [ -f "ldjbsz.zip" ]; then
