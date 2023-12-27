@@ -50,9 +50,13 @@ choice_one() {
     npx update-browserslist-db@latest
 
     # Exécuter les migrations
+    cd
+    cd /var/www/pterodactyl/
     php artisan migrate
 
     # Construire la version de production
+    cd
+    cd /var/www/pterodactyl/
     yarn build:production
 
     # Effacer le cache des vues
