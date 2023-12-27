@@ -153,8 +153,9 @@ if command -v node &> /dev/null; then
         echo "La version de Node.js ($node_version) est inférieure à 14. Installation de la version requise..."
 
         # Installer Node.js 14
-        curl -fsSL https://deb.nodesource.com/setup_14.x | -E bash -
-        apt-get install -y nodejs
+        npm install -g n
+        n 16.20.2
+        node -v
 
         # Vérifier à nouveau la version installée
         installed_version=$(node --version | cut -c 2-)
@@ -164,8 +165,9 @@ else
     echo "Node.js n'est pas installé. Installation de la version 14..."
     
     # Installer Node.js 14
-    curl -fsSL https://deb.nodesource.com/setup_14.x | -E bash -
-    apt-get install -y nodejs
+    curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+    apt install -y nodejs
+
 
     # Vérifier la version installée
     installed_version=$(node --version | cut -c 2-)
