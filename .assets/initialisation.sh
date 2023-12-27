@@ -156,6 +156,7 @@ if command -v node &> /dev/null; then
 
     # Comparer les versions
     if compare_versions "$node_version" "$required_version"; then
+        echo ""
         echo "${GREEN}${BOLD}La version de Node.js ($node_version) est déjà supérieure à 14.${RESET}"
     else
         echo "${BLUE}${BOLD}La version de Node.js ($node_version) est inférieure à 14. Installation de la version requise...${RESET}"
@@ -167,7 +168,9 @@ if command -v node &> /dev/null; then
 
         # Vérifier à nouveau la version installée
         installed_version=$(node --version | cut -c 2-)
+        echo ""
         echo "${GREEN}${BOLD}Node.js a été installé avec succès. Nouvelle version : $installed_version${RESET}"
+        echo ""
     fi
 else
     echo "${BLUE}${BOLD}Node.js n'est pas installé. Installation de la version 14...${RESET}"
