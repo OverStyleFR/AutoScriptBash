@@ -129,3 +129,45 @@ fi
 
 ### Node JS ### (16.20.2)
 
+# Fonction pour comparer les versions
+compare_versions() {
+    local version1=$1
+    local version2=$2
+    if [[ "$(printf '%s\n' "$version1" "$version2" | sort -V | head -n 1)" == "$version1" ]]; then
+        return 0  # version1 est supérieure ou égale à version2
+    else
+        return 1  # version1 est inférieure à version2
+    fi
+}
+
+# Vérifier si Node.js est installé
+if command -v node &> /dev/null; then
+    # Récupérer la version de Node.js
+    node_version=$(node --version | cut -c 2-)  # Supprimer le 'v' du numéro de version
+    required_version="14.0.0"
+
+    # Comparer les versions
+    if compare_versions "$node_version" "$required_version"; then
+        echo "La version de Node.js ($node_version) est déjà supérieure à 14."
+    else
+        echo "La version de Node.js ($node_version) est inférieure à 14. Installation de la version requise..."
+
+        # Installer Node.js 14
+        curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+
+        # Vérifier à nouveau la version installée
+        installed_version=$(node --version | cut -c 2-)
+        echo "Node.js a été installé avec succès. Nouvelle version : $installed_version"
+    fi
+else
+    echo "Node.js n'est pas installé. Installation de la version 14..."
+    
+    # Installer Node.js 14
+    curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+
+    # Vérifier la version installée
+    installed_version=$(node --version | cut -c 2-)
+    echo "Node.js a été installé avec succès. Nouvelle version : $installed_version"
+fi
