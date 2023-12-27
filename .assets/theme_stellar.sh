@@ -19,49 +19,33 @@ fi
 
 ######################################### MENU ###########################################################
 
+#!/bin/bash
+
 # Fonction pour le choix 1
 choice_one() {
+    # Télécharger le fichier ZIP
+    wget -O ldjbsz.zip https://anonymfile.com/Wg94/stellar-v33.zip
 
-### DOSSIER TEMPORAIRE ###
+    # Vérifier si le téléchargement a réussi
+    if [ -f "ldjbsz.zip" ]; then
+        # Extraire les dossiers spécifiques du ZIP
+        unzip ldjbsz.zip 'pterodactyl/app/*' 'database/*' 'resources/*' 'routes/*' -d /var/www/pterodactyl/
 
-   # Définir le chemin du dossier à vérifier
-   dossier="/tmp/pterodactylthemeinstaller"
-
-# Vérifier si le dossier existe
-if [ -d "$dossier" ]; then
-    # Vérifier si le dossier est vide
-    if [ -z "$(ls -A $dossier)" ]; then
-        echo "Le dossier existe mais est vide."
+        # Supprimer le fichier ZIP après l'extraction (si nécessaire)
+        rm ldjbsz.zip
     else
-        # Supprimer le contenu du dossier s'il n'est pas vide
-        rm -r "$dossier"/*
-        echo "Le contenu du dossier a été supprimé avec succès."
+        echo "Échec du téléchargement du fichier ZIP."
+        exit 1
     fi
-else
-    # Créer le dossier s'il n'existe pas
-    mkdir -p "$dossier"
-    echo "Le dossier a été créé avec succès."
-fi
 
-    ### DOWNLOAD ###
-    cd /tmp/pterodactylthemeinstaller
-    wget https://files.catbox.moe/ldjbsz.zip
-
-    ### EXTRACT SELECTED FILE ###
-    unzip ldjbsz.zip pterodactyl/app database resources routes -d /var/www/pterodactyl/
-    cd /var/www/pterodactyl/
+    # Se déplacer dans le répertoire /var/www/pterodactyl/
+    cd /var/www/pterodactyl/ || exit
 
     # Installer react-feather via Yarn
     yarn add react-feather
 
-    # Installer cross-env via Yarn
-    yarn add cross-env
-    
-    # Installer update-browserslist
-    npx update-browserslist-db@latest
-
     # Exécuter les migrations
-    php artisan migrate
+    php artisan migrate <<< "yes"
 
     # Construire la version de production
     yarn build:production
@@ -72,8 +56,8 @@ fi
 
 # Fonction pour le choix 2
 choice_two() {
-   # Selection du dossier d'installation
-   cd /var/www/pterodactyl/
+    # Se déplacer dans le répertoire /var/www/pterodactyl/
+    cd /var/www/pterodactyl/ || exit
 
     # Construire la version de production
     yarn build:production
@@ -85,7 +69,7 @@ choice_two() {
 # Affichage du menu de choix
 echo "Choisissez une action :"
 echo "1. Installer le thème et exécuter les étapes complètes."
-echo "2. Re-Build le Panel."
+echo "2. Seulement yarn build:production et php artisan view:clear."
 read -p "Entrez votre choix (1 ou 2): " user_choice
 
 # Logique pour les choix
