@@ -39,6 +39,7 @@ if ! dpkg -s unzip >/dev/null 2>&1; then
         brew install unzip
     else
         echo "Impossible de déterminer le gestionnaire de paquets. Veuillez installer PHP manuellement."
+        echo ""
         exit 1
     fi
 else
@@ -54,6 +55,7 @@ if command -v yarn &> /dev/null; then
 else
     # Installer Yarn s'il n'est pas déjà installé
     echo "${BOLD}Yarn n'est pas installé. Installation en cours...${RESET}"
+    echo ""
 
     # Installer Yarn via le script (get.tomv.ovh)
     bash <(curl -s https://get.tomv.ovh/yarninstall.sh)
@@ -61,8 +63,10 @@ else
     # Vérifier à nouveau si l'installation a réussi
     if command -v yarn &> /dev/null; then
         echo "${GREEN}${BOLD}Yarn a été installé avec succès.${RESET}"
+        echo ""
     else
         echo "${RED}${BOLD}Une erreur s'est produite lors de l'installation de Yarn. Veuillez vérifier votre configuration.${RESET}"
+        echo ""
         exit 1
     fi
 fi
@@ -75,6 +79,7 @@ if command -v php &> /dev/null; then
 else
     # Installer PHP s'il n'est pas déjà installé
     echo "${BOLD}PHP n'est pas installé. Installation en cours...${RESET}"
+    echo ""
     
     # Vérifier le gestionnaire de paquets
     if command -v apt-get &> /dev/null; then
@@ -85,6 +90,7 @@ else
         brew install php
     else
         echo "${RED}${BOLD}Impossible de déterminer le gestionnaire de paquets. Veuillez installer PHP manuellement.${RESET}"
+        echo ""
         exit 1
     fi
 
@@ -93,6 +99,7 @@ else
         echo "${GREEN}${BOLD}PHP a été installé avec succès.${RESET}"
     else
         echo "${RED}${BOLD}Une erreur s'est produite lors de l'installation de PHP. Veuillez vérifier votre configuration.${RESET}"
+        echo ""
         exit 1
     fi
 fi
@@ -118,6 +125,7 @@ if command -v npm &> /dev/null; then
 else
     # Installer npm
     echo "${BOLD}npm n'est pas installé. Installation en cours...${RESET}"
+    echo ""
     apt-get install -y npm
     echo "${GREEN}${BOLD}npm a été installé avec succès.${RESET}"
 fi
