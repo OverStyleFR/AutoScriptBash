@@ -50,7 +50,8 @@ mv lqxk6x.zip enigma-v39.zip
 
 ### EXTRACT SELECTED FILE ###
 
-unzip -o enigma-v39.zip app/ resources/ public/ net/nfnet/* tailwind.config.js -d /var/www/pterodactyl/
+unzip enigma-v39.zip
+mv app net public resources tailwind.config.js /var/www/pterodactyl
 
 ########################################## BUILD ########################################################
 
