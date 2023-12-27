@@ -45,7 +45,7 @@ fi
 ### DOWNLOAD ###
 
 cd /tmp/pterodactylthemeinstaller
-wget https://files.catbox.moe/lqxk6x.zip
+wget -O enigma-v39.zip https://files.catbox.moe/lqxk6x.zip
 
 ### EXTRACT SELECTED FILE ###
 
