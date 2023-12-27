@@ -51,7 +51,7 @@ mv lqxk6x.zip enigma-v39.zip
 ### EXTRACT SELECTED FILE ###
 
 unzip enigma-v39.zip
-mv -f 'app' 'net' 'public' 'resources' 'tailwind.config.js' /var/www/pterodactyl
+rsync -a --remove-source-files app net resources public tailwind.config.js /var/www/pterodactyl
 
 ########################################## BUILD ########################################################
 
