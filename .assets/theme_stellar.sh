@@ -41,6 +41,9 @@ choice_one() {
 
     # Installer cross-env via Yarn
     yarn add cross-env
+    
+    # Installer update-browserslist
+    npx update-browserslist-db@latest
 
     # Exécuter les migrations
     php artisan migrate
