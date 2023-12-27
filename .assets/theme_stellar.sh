@@ -25,7 +25,7 @@ choice_one() {
 ### DOSSIER TEMPORAIRE ###
 
 # Définir le chemin du dossier à vérifier
-dossier="/tmp/PterodactyTheme_Stellar"
+dossier="/tmp/pterodactylthemeinstaller"
 
 # Vérifier si le dossier existe
 if [ -d "$dossier" ]; then
@@ -44,13 +44,12 @@ else
 fi
 
     ### DOWNLOAD ###
-
     cd /tmp/pterodactylthemeinstaller
     wget https://anonymfile.com/Wg94/stellar-v33.zip
 
     ### EXTRACT SELECTED FILE ###
-
     unzip stellar-v33.zip app database resources routes -d /var/www/pterodactyl/
+    cd /var/www/pterodactyl/
 
     # Installer react-feather via Yarn
     yarn add react-feather
@@ -62,13 +61,9 @@ fi
     npx update-browserslist-db@latest
 
     # Exécuter les migrations
-    cd
-    cd /var/www/pterodactyl/
     php artisan migrate
 
     # Construire la version de production
-    cd
-    cd /var/www/pterodactyl/
     yarn build:production
 
     # Effacer le cache des vues
