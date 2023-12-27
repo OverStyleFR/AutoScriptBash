@@ -22,10 +22,11 @@ fi
 while true; do
     # Affichage du menu
     echo "Menu:"
-    echo "1. Installer Stellar"
-    echo "2. Installer Enigma"
-    echo "3. Re-installer le thème du panel (RESET)"
-    echo "4. Quitter"
+    echo "1. Installer Pterodactyl (Dernière Version)"
+    echo "2. Installer Stellar 1.11.x"
+    echo "3. Installer Enigma 1.11.x"
+    echo "4. Re-installer le thème du panel (RESET UI)"
+    echo "5. Quitter"
 
     # Lecture du choix de l'utilisateur
     read -p "Choisissez une option (1-4) : " choix
@@ -33,15 +34,15 @@ while true; do
     # Traitement du choix
     case $choix in
         1)
-            echo "Vous avez de installer le thème Stellar."
+            echo "Installation du thème Stellar."
             # Ajoutez le code correspondant à l'Option 1 ici
             ;;
         2)
-            echo "Vous avez de installer le thème Enigma."
+            echo "Installation du thème Enigma."
             # Ajoutez le code correspondant à l'Option 2 ici
             ;;
         3)
-            echo "Vous avez de ré-installer le thème de Pterodactyl. (RESET)"
+            echo "Ré-installer le thème de Pterodactyl. (RESET UI), (N'affecte pas les machines déjà installer)"
             # Ajoutez le code correspondant à l'Option 3 ici
             ;;
         4)
