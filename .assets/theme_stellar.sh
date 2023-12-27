@@ -17,6 +17,32 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+######################################### MENU ###########################################################
+
+# Affichage du menu de choix
+echo "Choisissez une action :"
+echo "1. Installer le thème et exécuter les étapes complètes."
+echo "2. Seulement yarn build:production et php artisan view:clear."
+read -p "Entrez votre choix (1 ou 2): " user_choice
+
+# Logique pour les choix
+case $user_choice in
+    1)
+        echo "Vous avez choisi d'installer le thème et d'exécuter les étapes complètes."
+        choice_one
+        ;;
+    2)
+        echo "Vous avez choisi de seulement exécuter yarn build:production et php artisan view:clear."
+        choice_two
+        ;;
+    *)
+        echo "Choix invalide. Veuillez entrer 1 ou 2."
+        exit 1
+        ;;
+esac
+
+############## REST OF THE SCRIPT #############
+
 # Fonction pour le choix 1
 choice_one() {
     # Télécharger le fichier ZIP
@@ -55,25 +81,3 @@ choice_two() {
     # Effacer le cache des vues
     php artisan view:clear
 }
-
-# Affichage du menu de choix
-echo "Choisissez une action :"
-echo "1. Installer le thème et exécuter les étapes complètes."
-echo "2. Seulement yarn build:production et php artisan view:clear."
-read -p "Entrez votre choix (1 ou 2): " user_choice
-
-# Logique pour les choix
-case $user_choice in
-    1)
-        echo "Vous avez choisi d'installer le thème et d'exécuter les étapes complètes."
-        choice_one
-        ;;
-    2)
-        echo "Vous avez choisi de seulement exécuter yarn build:production et php artisan view:clear."
-        choice_two
-        ;;
-    *)
-        echo "Choix invalide. Veuillez entrer 1 ou 2."
-        exit 1
-        ;;
-esac
