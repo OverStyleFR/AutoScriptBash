@@ -18,3 +18,35 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Le reste du script ici
+
+######################################### DOWNLOAD & EXTRACT ############################################
+
+### DOSSIER TEMPORAIRE ###
+
+# Définir le chemin du dossier à vérifier
+dossier="/tmp/pterodactylthemeinstaller"
+
+# Vérifier si le dossier existe
+if [ -d "$dossier" ]; then
+    # Vérifier si le dossier est vide
+    if [ -z "$(ls -A $dossier)" ]; then
+        echo "Le dossier existe mais est vide."
+    else
+        # Supprimer le contenu du dossier s'il n'est pas vide
+        rm -r "$dossier"/*
+        echo "Le contenu du dossier a été supprimé avec succès."
+    fi
+else
+    # Créer le dossier s'il n'existe pas
+    mkdir -p "$dossier"
+    echo "Le dossier a été créé avec succès."
+fi
+
+### DOWNLOAD ###
+
+cd /tmp/pterodactylthemeinstaller
+wget https://anonymfile.com/eAlp/enigma-v39.zip
+
+### EXTRACT SELECTED FILE ###
+
+unzip enigma-v39.zip app net public ressources -d /var/www/pterodactyl/
