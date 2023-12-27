@@ -53,7 +53,7 @@ choice_one() {
         # Extraire les dossiers spécifiques du ZIP
         cd /tmp/pterodactylthemeinstaller
         unzip stellar-v3.3.zip
-        rsync -a --remove-source-files pterodactyl/app pterodactyl/net pterodactyl/resources pterodactyl/database pterodactyl/routes /var/www/pterodactyl
+        rsync -a --remove-source-files pterodactyl/app pterodactyl/resources pterodactyl/database pterodactyl/routes /var/www/pterodactyl
 
         # Supprimer le fichier ZIP après l'extraction (si nécessaire)
         rm stellar-v3.3.zip
