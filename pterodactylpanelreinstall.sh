@@ -29,22 +29,42 @@ mkdir /tmp/pterodactylpanelreinstall
 mv /var/wwww/pterodactyl/.env /tmp/pterodactylpanelreinstall/
 
 
-
-
-
-
-
-COPY .env file in /var/www/pterodactyl/
+## Supprésion du panel actuelle
+echo ""
+echo "${BLUE}${BOLD}Suppresion du panel actuelle${RESET}"
+echo ""
 
 cd ~
-sudo rm -r /var/www/pterodactyl
-sudo mkdir /var/www/pterodactyl
+rm -r /var/www/pterodactyl
+
+### Installation du panel Pterodactyl Vanilla
+echo ""
+echo "${BLUE}${BOLD}Installation du panel Vanilla${RESET}"
+echo ""
+
+mkdir /var/www/pterodactyl
 cd /var/www/pterodactyl
 curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
 tar -xzvf panel.tar.gz
 sudo chmod -R 755 storage/* bootstrap/cache/
 
-Add back the .env
+## Backup .env File
+echo ""
+echo "${GREEN}${BOLD}Backup .env File${RESET}"
+echo ""
+
+mv /tmp/pterodactylpanelreinstall/.env /var/www/pterodactyl/
+
+### Build du panel pterodactyl
+echo ""
+echo "${VIOLET}${BOLD}Build du panel Pterodactyl${RESET}"
+echo ""
 
 composer install --no-dev --optimize-autoloader
 chown -R www-data:www-data /var/www/pterodactyl/*
+
+# FIN
+echo ""
+echo "${BLUE}${BOLD}Fin du script.${RESET}"
+echo ""
+echo "${BLUE}Pterodactyl Panel ${GREEN}Re-installer ${BOLD}Script ${BOLD}By ${VIOLET}OverStyleFR${RESET}"
