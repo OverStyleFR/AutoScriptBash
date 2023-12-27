@@ -19,29 +19,7 @@ fi
 
 ######################################### MENU ###########################################################
 
-# Affichage du menu de choix
-echo "Choisissez une action :"
-echo "1. Installer le thème et exécuter les étapes complètes."
-echo "2. Seulement yarn build:production et php artisan view:clear."
-read -p "Entrez votre choix (1 ou 2): " user_choice
-
-# Logique pour les choix
-case $user_choice in
-    1)
-        echo "Vous avez choisi d'installer le thème et d'exécuter les étapes complètes."
-        choice_one
-        ;;
-    2)
-        echo "Vous avez choisi de seulement exécuter yarn build:production et php artisan view:clear."
-        choice_two
-        ;;
-    *)
-        echo "Choix invalide. Veuillez entrer 1 ou 2."
-        exit 1
-        ;;
-esac
-
-############## REST OF THE SCRIPT #############
+#!/bin/bash
 
 # Fonction pour le choix 1
 choice_one() {
@@ -63,11 +41,8 @@ choice_one() {
     # Installer react-feather via Yarn
     yarn add react-feather
 
-    # Installer cross-env via Yarn
-    yarn add cross-env
-
     # Exécuter les migrations
-    php artisan migrate <<< "yes"
+    php artisan migrate
 
     # Construire la version de production
     yarn build:production
@@ -84,3 +59,25 @@ choice_two() {
     # Effacer le cache des vues
     php artisan view:clear
 }
+
+# Affichage du menu de choix
+echo "Choisissez une action :"
+echo "1. Installer le thème et exécuter les étapes complètes."
+echo "2. Seulement yarn build:production et php artisan view:clear."
+read -p "Entrez votre choix (1 ou 2): " user_choice
+
+# Logique pour les choix
+case $user_choice in
+    1)
+        echo "Vous avez choisi d'installer le thème et d'exécuter les étapes complètes."
+        choice_one  # Assurez-vous que la fonction est définie avant cet appel
+        ;;
+    2)
+        echo "Vous avez choisi de seulement exécuter yarn build:production et php artisan view:clear."
+        choice_two
+        ;;
+    *)
+        echo "Choix invalide. Veuillez entrer 1 ou 2."
+        exit 1
+        ;;
+esac
