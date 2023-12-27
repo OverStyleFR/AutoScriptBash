@@ -59,8 +59,35 @@ fi
 
 ### PHP ###
 
+# Vérifier si PHP est installé
+if command -v php &> /dev/null; then
+    echo "PHP est déjà installé sur votre machine."
+else
+    # Installer PHP s'il n'est pas déjà installé
+    echo "PHP n'est pas installé. Installation en cours..."
+    
+    # Vérifier le gestionnaire de paquets
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y php
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y php
+    elif command -v brew &> /dev/null; then
+        brew install php
+    else
+        echo "Impossible de déterminer le gestionnaire de paquets. Veuillez installer PHP manuellement."
+        exit 1
+    fi
 
+    # Vérifier à nouveau si l'installation a réussi
+    if command -v php &> /dev/null; then
+        echo "PHP a été installé avec succès."
+    else
+        echo "Une erreur s'est produite lors de l'installation de PHP. Veuillez vérifier votre configuration."
+        exit 1
+    fi
+fi
 
+### AUTRES ###
 
 
 
