@@ -33,7 +33,7 @@ while true; do
     echo "| ├ N'affecte pas les machines déjà installer  |"
     echo "| └ Aucune perte de sauvegarde                 |"
     echo "| 5. Quitter                                   |"
-    echo "+----------------------------------------------+
+    echo "+----------------------------------------------+"
 
 
     # Lecture du choix de l'utilisateur
