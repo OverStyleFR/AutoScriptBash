@@ -57,6 +57,9 @@ unzip enigma-v39.zip app net public ressources nullforums.yml tailwind.config.js
 
 cd /var/www/pterodactyl && php artisan view:clear && php artisan config:clear && chown -R www-data:www-data /var/www/pterodactyl/*
 
+## Installation cross-env
+yarn add cross-env
+
 ### BUILD ###
 
 yarn build:production
