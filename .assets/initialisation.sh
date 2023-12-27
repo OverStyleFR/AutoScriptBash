@@ -32,9 +32,9 @@ if ! dpkg -s unzip >/dev/null 2>&1; then
 
     # Vérifier le gestionnaire de paquets
     if command -v apt-get &> /dev/null; then
-        sudo apt-get install -y unzip
+         apt-get install -y unzip
     elif command -v yum &> /dev/null; then
-        sudo yum install -y unzip
+         yum install -y unzip
     elif command -v brew &> /dev/null; then
         brew install unzip
     else
@@ -78,9 +78,9 @@ else
     
     # Vérifier le gestionnaire de paquets
     if command -v apt-get &> /dev/null; then
-        sudo apt-get install -y php
+        apt-get install -y php
     elif command -v yum &> /dev/null; then
-        sudo yum install -y php
+        yum install -y php
     elif command -v brew &> /dev/null; then
         brew install php
     else
@@ -118,7 +118,7 @@ if command -v npm &> /dev/null; then
 else
     # Installer npm
     echo "npm n'est pas installé. Installation en cours..."
-    sudo apt-get install -y npm
+    apt-get install -y npm
     echo "npm a été installé avec succès."
 fi
 
@@ -153,8 +153,8 @@ if command -v node &> /dev/null; then
         echo "La version de Node.js ($node_version) est inférieure à 14. Installation de la version requise..."
 
         # Installer Node.js 14
-        curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-        sudo apt-get install -y nodejs
+        curl -fsSL https://deb.nodesource.com/setup_14.x | -E bash -
+        apt-get install -y nodejs
 
         # Vérifier à nouveau la version installée
         installed_version=$(node --version | cut -c 2-)
@@ -164,8 +164,8 @@ else
     echo "Node.js n'est pas installé. Installation de la version 14..."
     
     # Installer Node.js 14
-    curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    curl -fsSL https://deb.nodesource.com/setup_14.x | -E bash -
+    apt-get install -y nodejs
 
     # Vérifier la version installée
     installed_version=$(node --version | cut -c 2-)
