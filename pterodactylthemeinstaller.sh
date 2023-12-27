@@ -44,15 +44,18 @@ while true; do
         2)
             echo "Installation du thème Stellar."
             # Ajoutez le code correspondant à l'Option 1 ici
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/PterodactylThemeInstaller/.assets/theme_stellar.sh)
             ;;
         3)
             echo "Installation du thème Enigma."
             # Ajoutez le code correspondant à l'Option 2 ici
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/PterodactylThemeInstaller/.assets/theme_enigma.sh)
             ;;
         4)
             echo "Ré-installer le thème de Pterodactyl. (RESET UI)"
             echo "N'affecte pas les machines déjà installer"
             # Ajoutez le code correspondant à l'Option 3 ici
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/PterodactylThemeInstaller/pterodactylpanelreinstall.sh)
             ;;
         5)
             echo "Au revoir !"
