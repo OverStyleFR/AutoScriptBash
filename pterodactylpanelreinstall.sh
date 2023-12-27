@@ -26,7 +26,7 @@ echo "${GREEN}${BOLD}Auto-Save .env File${RESET}"
 echo ""
 
 mkdir /tmp/pterodactylpanelreinstall
-mv /var/wwww/pterodactyl/.env /tmp/pterodactylpanelreinstall/
+mv /var/www/pterodactyl/.env /tmp/pterodactylpanelreinstall/
 
 
 ## Supprésion du panel actuelle
@@ -55,7 +55,19 @@ echo ""
 
 mv /tmp/pterodactylpanelreinstall/.env /var/www/pterodactyl/
 
-### Build du panel pterodactyl
+############################################ Build du panel pterodactyl ###################################
+
+# Demander à l'utilisateur de faire l'action "save file"
+read -p "Voulez vous re-build le panel Pterodactyl ? ${BOLD}NON REVERSIBLE${RESET}" response
+
+# Vérifier si la réponse est "oui"
+if [ "$response" = "oui" ]; then
+    echo "L'utilisateur a répondu 'oui'. Le script continue..."
+else
+    echo "Réponse incorrecte. Le script se termine."
+    exit 1
+fi
+
 echo ""
 echo "${VIOLET}${BOLD}Build du panel Pterodactyl${RESET}"
 echo ""
