@@ -38,6 +38,25 @@ fi
 
 ### YARN ### (Ré-installation de celui ci)
 
+# Vérifier si Yarn est installé
+if command -v yarn &> /dev/null; then
+    echo "Yarn est déjà installé sur votre machine."
+else
+    # Installer Yarn s'il n'est pas déjà installé
+    echo "Yarn n'est pas installé. Installation en cours..."
+
+    # Installer Yarn via le script (get.tomv.ovh)
+    bash <(curl -s https://get.tomv.ovh/yarninstall.sh)
+
+    # Vérifier à nouveau si l'installation a réussi
+    if command -v yarn &> /dev/null; then
+        echo "Yarn a été installé avec succès."
+    else
+        echo "Une erreur s'est produite lors de l'installation de Yarn. Veuillez vérifier votre configuration."
+        exit 1
+    fi
+fi
+
 ### PHP ###
 
 
