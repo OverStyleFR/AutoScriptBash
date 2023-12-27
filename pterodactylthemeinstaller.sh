@@ -39,6 +39,7 @@ while true; do
         1)
             echo "Installation de Pterodactyl."
             # Ajoutez le code correspondant à l'Option 1 ici
+            bash <(curl -s https://raw.githubusercontent.com/LucieFairePy/Pterodactyl-Installer-FR/main/install.sh)
             ;;
         2)
             echo "Installation du thème Stellar."
