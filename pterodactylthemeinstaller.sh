@@ -28,7 +28,7 @@ while true; do
     echo "| 2. Installer Stellar 1.11.x                  |"
     echo "|                                              |"
     echo "| 3. Installer Enigma 1.11.x                   |"
-    echo "|                                              |"
+    echo "+----------------------------------------------+"
     echo "| 4. Re-installer le thème du panel (RESET UI) |"
     echo "| ├ N'affecte pas les machines déjà installer  |"
     echo "| └ Aucune perte de sauvegarde                 |"
