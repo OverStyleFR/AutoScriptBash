@@ -21,6 +21,10 @@ fi
 
 # Fonction pour le choix 1
 choice_one() {
+
+    # Selection du dossier d'installation
+    cd /var/www/pterodactyl/
+
     # Télécharger le fichier ZIP
     wget -O theme.zip https://anonymfile.com/Wg94/stellar-v33.zip
 
@@ -57,6 +61,9 @@ choice_one() {
 
 # Fonction pour le choix 2
 choice_two() {
+   # Selection du dossier d'installation
+   cd /var/www/pterodactyl/
+
     # Construire la version de production
     yarn build:production
 
@@ -67,7 +74,7 @@ choice_two() {
 # Affichage du menu de choix
 echo "Choisissez une action :"
 echo "1. Installer le thème et exécuter les étapes complètes."
-echo "2. Seulement yarn build:production et php artisan view:clear."
+echo "2. Re-Build le Panel."
 read -p "Entrez votre choix (1 ou 2): " user_choice
 
 # Logique pour les choix
