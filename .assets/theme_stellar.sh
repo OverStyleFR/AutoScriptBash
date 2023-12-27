@@ -63,6 +63,9 @@ choice_one() {
     # Installer react-feather via Yarn
     yarn add react-feather
 
+    # Installer cross-env via Yarn
+    yarn add cross-env
+
     # Exécuter les migrations
     php artisan migrate <<< "yes"
 
