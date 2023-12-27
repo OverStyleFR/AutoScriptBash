@@ -68,6 +68,9 @@ choice_one() {
     # Installer react-feather via Yarn
     yarn add react-feather
 
+    ## NPX Installation
+    npx update-browserslist-db@latest
+
     # Exécuter les migrations
     php artisan migrate <<< "yes"
 
