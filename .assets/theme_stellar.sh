@@ -48,7 +48,7 @@ fi
     wget https://files.catbox.moe/ldjbsz.zip
 
     ### EXTRACT SELECTED FILE ###
-    unzip ldjbsz.zip app database resources routes -d /var/www/pterodactyl/
+    unzip ldjbsz.zip pterodactyl/app database resources routes -d /var/www/pterodactyl/
     cd /var/www/pterodactyl/
 
     # Installer react-feather via Yarn
