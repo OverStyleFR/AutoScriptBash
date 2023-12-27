@@ -39,30 +39,34 @@ if ! dpkg -s unzip >/dev/null 2>&1; then
         brew install unzip
     else
         echo "Impossible de déterminer le gestionnaire de paquets. Veuillez installer PHP manuellement."
+        echo ""
         exit 1
     fi
 else
     # Afficher le texte en vert et en gras
-    echo "${BOLD}Le package unzip est déjà installé.${RESET}"
+    echo "${GREEN}${BOLD}Le package unzip est déjà installé.${RESET}"
 fi
 
 ### YARN ### (Ré-installation de celui ci)
 
 # Vérifier si Yarn est installé
 if command -v yarn &> /dev/null; then
-    echo "Yarn est déjà installé sur votre machine."
+    echo "${BOLD}Yarn est déjà installé sur votre machine.${RESET}"
 else
     # Installer Yarn s'il n'est pas déjà installé
-    echo "Yarn n'est pas installé. Installation en cours..."
+    echo "${BOLD}Yarn n'est pas installé. Installation en cours...${RESET}"
+    echo ""
 
     # Installer Yarn via le script (get.tomv.ovh)
     bash <(curl -s https://get.tomv.ovh/yarninstall.sh)
 
     # Vérifier à nouveau si l'installation a réussi
     if command -v yarn &> /dev/null; then
-        echo "Yarn a été installé avec succès."
+        echo "${GREEN}${BOLD}Yarn a été installé avec succès.${RESET}"
+        echo ""
     else
-        echo "Une erreur s'est produite lors de l'installation de Yarn. Veuillez vérifier votre configuration."
+        echo "${RED}${BOLD}Une erreur s'est produite lors de l'installation de Yarn. Veuillez vérifier votre configuration.${RESET}"
+        echo ""
         exit 1
     fi
 fi
@@ -71,10 +75,11 @@ fi
 
 # Vérifier si PHP est installé
 if command -v php &> /dev/null; then
-    echo "PHP est déjà installé sur votre machine."
+    echo "${BOLD}PHP est déjà installé sur votre machine.${RESET}"
 else
     # Installer PHP s'il n'est pas déjà installé
-    echo "PHP n'est pas installé. Installation en cours..."
+    echo "${BOLD}PHP n'est pas installé. Installation en cours...${RESET}"
+    echo ""
     
     # Vérifier le gestionnaire de paquets
     if command -v apt-get &> /dev/null; then
@@ -84,15 +89,17 @@ else
     elif command -v brew &> /dev/null; then
         brew install php
     else
-        echo "Impossible de déterminer le gestionnaire de paquets. Veuillez installer PHP manuellement."
+        echo "${RED}${BOLD}Impossible de déterminer le gestionnaire de paquets. Veuillez installer PHP manuellement.${RESET}"
+        echo ""
         exit 1
     fi
 
     # Vérifier à nouveau si l'installation a réussi
     if command -v php &> /dev/null; then
-        echo "PHP a été installé avec succès."
+        echo "${GREEN}${BOLD}PHP a été installé avec succès.${RESET}"
     else
-        echo "Une erreur s'est produite lors de l'installation de PHP. Veuillez vérifier votre configuration."
+        echo "${RED}${BOLD}Une erreur s'est produite lors de l'installation de PHP. Veuillez vérifier votre configuration.${RESET}"
+        echo ""
         exit 1
     fi
 fi
@@ -101,25 +108,26 @@ fi
 
 # Vérifier si Node.js est installé
 if command -v node &> /dev/null; then
-    echo "Node.js est déjà installé."
+    echo "${BOLD}Node.js est déjà installé.${RESET}"
 else
     # Installer Node.js
     curl -SLO https://deb.nodesource.com/nsolid_setup_deb.sh
     chmod 500 nsolid_setup_deb.sh
     ./nsolid_setup_deb.sh 16
     apt-get install nodejs -y
-    echo "Node.js a été installé avec succès."
+    echo "${GREEN}${BOLD}Node.js a été installé avec succès.${RESET}"
     rm ./nsolid_setup_deb.sh
 fi
 
 # Vérifier si npm est installé
 if command -v npm &> /dev/null; then
-    echo "npm est déjà installé."
+    echo "${BOLD}npm est déjà installé.${RESET}"
 else
     # Installer npm
-    echo "npm n'est pas installé. Installation en cours..."
+    echo "${BOLD}npm n'est pas installé. Installation en cours...${RESET}"
+    echo ""
     apt-get install -y npm
-    echo "npm a été installé avec succès."
+    echo "${GREEN}${BOLD}npm a été installé avec succès.${RESET}"
 fi
 
 ### AUTRES ###
@@ -148,9 +156,9 @@ if command -v node &> /dev/null; then
 
     # Comparer les versions
     if compare_versions "$node_version" "$required_version"; then
-        echo "La version de Node.js ($node_version) est déjà supérieure à 14."
+        echo "${GREEN}${BOLD}La version de Node.js ($node_version) est déjà supérieure à 14.${RESET}"
     else
-        echo "La version de Node.js ($node_version) est inférieure à 14. Installation de la version requise..."
+        echo "${BLUE}${BOLD}La version de Node.js ($node_version) est inférieure à 14. Installation de la version requise...${RESET}"
 
         # Installer Node.js 14
         npm install -g n
@@ -159,10 +167,10 @@ if command -v node &> /dev/null; then
 
         # Vérifier à nouveau la version installée
         installed_version=$(node --version | cut -c 2-)
-        echo "Node.js a été installé avec succès. Nouvelle version : $installed_version"
+        echo "${GREEN}${BOLD}Node.js a été installé avec succès. Nouvelle version : $installed_version${RESET}"
     fi
 else
-    echo "Node.js n'est pas installé. Installation de la version 14..."
+    echo "${BLUE}${BOLD}Node.js n'est pas installé. Installation de la version 14...${RESET}"
     
     # Installer Node.js 14
     curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
@@ -171,5 +179,5 @@ else
 
     # Vérifier la version installée
     installed_version=$(node --version | cut -c 2-)
-    echo "Node.js a été installé avec succès. Nouvelle version : $installed_version"
+    echo "${GREEN}${BOLD}Node.js a été installé avec succès. Nouvelle version : $installed_version${RESET}"
 fi

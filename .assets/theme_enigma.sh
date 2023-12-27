@@ -30,43 +30,56 @@ dossier="/tmp/pterodactylthemeinstaller"
 if [ -d "$dossier" ]; then
     # Vérifier si le dossier est vide
     if [ -z "$(ls -A $dossier)" ]; then
-        echo "Le dossier existe mais est vide."
+        echo "${BOLD}Le dossier existe mais est vide.${RESET}"
     else
         # Supprimer le contenu du dossier s'il n'est pas vide
         rm -r "$dossier"/*
-        echo "Le contenu du dossier a été supprimé avec succès."
+        echo "${RED}${BOLD}Le contenu du dossier a été supprimé avec succès.${RESET}"
     fi
 else
     # Créer le dossier s'il n'existe pas
     mkdir -p "$dossier"
-    echo "Le dossier a été créé avec succès."
+    echo "${GREEN}${BOLD}Le dossier a été créé avec succès.${RESET}"
 fi
 
 ### DOWNLOAD ###
 
 cd /tmp/pterodactylthemeinstaller
+echo ""
+echo "${BOLD}Téléchargement du thème :${RESET}"
+echo ""
 wget -O enigma-v39.zip https://files.catbox.moe/lqxk6x.zip
-mv lqxk6x.zip enigma-v39.zip
 
 ### EXTRACT SELECTED FILE ###
 
-unzip enigma-v39.zip
+echo ""
+echo "${BOLD}Extraction du thème...${RESET}"
+
+unzip enigma-v39.zip > /dev/null 2>&1
+echo "${BOLD}Déplacement du thème...${RESET}"
 rsync -a --remove-source-files app net resources public tailwind.config.js /var/www/pterodactyl
+echo ""
 
 ########################################## BUILD ########################################################
 
 cd /var/www/pterodactyl
 
 ## Installation cross-env
-yarn add cross-env
+echo "${BOLD}Installation de 'cross-env' via yarn...${RESET}"
+yarn add cross-env > /dev/null 2>&1
 
 ## NPX Installation
-npx update-browserslist-db@latest
+echo "${BOLD}Mise à jour de NPX...${RESET}"
+npx update-browserslist-db@latest > /dev/null 2>&1
 
 ### APPLIQUER ###
 
-cd /var/www/pterodactyl && php artisan view:clear && php artisan config:clear && chown -R www-data:www-data /var/www/pterodactyl/*
+echo "${BOLD}Application du thème...${RESET}"
+cd /var/www/pterodactyl && php artisan view:clear > /dev/null 2>&1 && php artisan config:clear > /dev/null 2>&1 && chown -R www-data:www-data /var/www/pterodactyl/* 
 
 ### BUILD ###
 
-yarn build:production
+echo "${VIOLET}${BOLD}Re-build du thème en cour...${RESET}"
+yarn build:production > /dev/null 2>&1
+echo "${GREEN}${BOLD}Build Terminé !.${RESET}"
+echo ""
