@@ -47,10 +47,9 @@ choice_one() {
 
     cd /tmp/pterodactylthemeinstaller
     wget -O stellar-v3.3.zip https://files.catbox.moe/ldjbsz.zip
-    mv ldjbsz.zip stellar-v3.3.zip
 
     # Vérifier si le téléchargement a réussi
-    if [ -f "ldjbsz.zip" ]; then
+    if [ -f "stellar-v3.3.zip" ]; then
         # Extraire les dossiers spécifiques du ZIP
         cd /tmp/pterodactylthemeinstaller
         unzip stellar-v3.3.zip
