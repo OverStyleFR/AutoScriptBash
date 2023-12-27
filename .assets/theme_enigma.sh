@@ -49,4 +49,17 @@ wget https://anonymfile.com/eAlp/enigma-v39.zip
 
 ### EXTRACT SELECTED FILE ###
 
-unzip enigma-v39.zip app net public ressources -d /var/www/pterodactyl/
+unzip enigma-v39.zip app net public ressources nullforums.yml tailwind.config.js -d /var/www/pterodactyl/
+
+########################################## BUILD ########################################################
+
+### APPLIQUER ###
+
+cd /var/www/pterodactyl && php artisan view:clear && php artisan config:clear && chown -R www-data:www-data /var/www/pterodactyl/*
+
+## Installation cross-env
+yarn add cross-env
+
+### BUILD ###
+
+yarn build:production
