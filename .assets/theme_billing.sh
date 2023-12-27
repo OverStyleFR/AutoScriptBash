@@ -81,11 +81,7 @@ cd /var/www/pterodactyl
 ### APPLIQUER ###
 
 echo "${BOLD}Application du thème...${RESET}"
-php artisan billing:install stable
-
-### KEY ###
-
-wemxgay
+php artisan billing:install stable <<< wemxgay
 
 ### BUILD ###
 
