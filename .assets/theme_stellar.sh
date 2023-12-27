@@ -45,7 +45,7 @@ fi
 
     ### DOWNLOAD ###
     cd /tmp/pterodactylthemeinstaller
-    wget https://anonymfile.com/Wg94/stellar-v33.zip
+    wget https://files.catbox.moe/ldjbsz.zip
 
     ### EXTRACT SELECTED FILE ###
     unzip stellar-v33.zip app database resources routes -d /var/www/pterodactyl/
