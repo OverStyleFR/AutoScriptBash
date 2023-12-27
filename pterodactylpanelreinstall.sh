@@ -18,3 +18,33 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Le reste du script ici
+
+########################################## AUTO-SAVE .env FILE ##########################################
+
+echo ""
+echo "${GREEN}${BOLD}Auto-Save .env File${RESET}"
+echo ""
+
+mkdir /tmp/pterodactylpanelreinstall
+mv /var/wwww/pterodactyl/.env /tmp/pterodactylpanelreinstall/
+
+
+
+
+
+
+
+COPY .env file in /var/www/pterodactyl/
+
+cd ~
+sudo rm -r /var/www/pterodactyl
+sudo mkdir /var/www/pterodactyl
+cd /var/www/pterodactyl
+curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
+tar -xzvf panel.tar.gz
+sudo chmod -R 755 storage/* bootstrap/cache/
+
+Add back the .env
+
+composer install --no-dev --optimize-autoloader
+chown -R www-data:www-data /var/www/pterodactyl/*
