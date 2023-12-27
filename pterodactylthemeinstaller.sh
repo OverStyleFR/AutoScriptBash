@@ -72,7 +72,7 @@ while true; do
         4)
             echo "Installation du thème Billing Module"
             # Ajoutez le code correspondant à l'Option 4 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/PterodactylThemeInstaller/pterodactylpanelreinstall.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/PterodactylThemeInstaller/.assets/theme_billing.sh)
             ;;
         5)
             echo "Ré-installer le thème de Pterodactyl. (RESET UI)"
