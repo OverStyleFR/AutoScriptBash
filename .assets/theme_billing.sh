@@ -71,12 +71,12 @@ echo ""
 cd /var/www/pterodactyl
 
 ## Installation cross-env
-# echo "${BOLD}Installation de 'cross-env' via yarn...${RESET}"
-# yarn add cross-env > /dev/null 2>&1
+echo "${BOLD}Installation de 'cross-env' via yarn...${RESET}"
+yarn add cross-env > /dev/null 2>&1
 
 ## NPX Installation
-# echo "${BOLD}Mise à jour de NPX...${RESET}"
-# npx update-browserslist-db@latest > /dev/null 2>&1
+echo "${BOLD}Mise à jour de NPX...${RESET}"
+npx update-browserslist-db@latest > /dev/null 2>&1
 
 ### APPLIQUER ###
 
