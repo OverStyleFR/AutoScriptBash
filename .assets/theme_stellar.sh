@@ -26,7 +26,7 @@ choice_one() {
     cd /var/www/pterodactyl/
 
     # Télécharger le fichier ZIP
-    wget -O theme.zip https://anonymfile.com/Wg94/stellar-v33.zip
+    wget -O theme.zip https://files.catbox.moe/ldjbsz.zip
 
     # Vérifier si le téléchargement a réussi
     if [ -f "theme.zip" ]; then

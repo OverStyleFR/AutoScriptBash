@@ -45,7 +45,7 @@ fi
 ### DOWNLOAD ###
 
 cd /tmp/pterodactylthemeinstaller
-wget https://anonymfile.com/eAlp/enigma-v39.zip
+wget https://files.catbox.moe/lqxk6x.zip
 
 ### EXTRACT SELECTED FILE ###
 
