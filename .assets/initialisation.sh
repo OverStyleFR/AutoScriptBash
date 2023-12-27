@@ -97,11 +97,32 @@ else
     fi
 fi
 
+### Node JS & npm ###
+
+# Vérifier si Node.js est installé
+if command -v node &> /dev/null; then
+    echo "Node.js est déjà installé."
+else
+    # Installer Node.js
+    curl -SLO https://deb.nodesource.com/nsolid_setup_deb.sh
+    chmod 500 nsolid_setup_deb.sh
+    ./nsolid_setup_deb.sh 16
+    apt-get install nodejs -y
+    echo "Node.js a été installé avec succès."
+    rm ./nsolid_setup_deb.sh
+fi
+
+# Vérifier si npm est installé
+if command -v npm &> /dev/null; then
+    echo "npm est déjà installé."
+else
+    # Installer npm
+    echo "npm n'est pas installé. Installation en cours..."
+    sudo apt-get install -y npm
+    echo "npm a été installé avec succès."
+fi
+
 ### AUTRES ###
-
-
-
-
 
 
 ################ VERSIONS #################
