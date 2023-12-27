@@ -26,6 +26,8 @@ while true; do
     echo "2. Installer Stellar 1.11.x"
     echo "3. Installer Enigma 1.11.x"
     echo "4. Re-installer le thème du panel (RESET UI)"
+    echo " ├ N'affecte pas les machines déjà installer"
+    echo " └ Aucune perte de sauvegarde"
     echo "5. Quitter"
 
     # Lecture du choix de l'utilisateur
@@ -33,24 +35,30 @@ while true; do
 
     # Traitement du choix
     case $choix in
+        
         1)
-            echo "Installation du thème Stellar."
+            echo "Installation de Pterodactyl."
             # Ajoutez le code correspondant à l'Option 1 ici
             ;;
         2)
+            echo "Installation du thème Stellar."
+            # Ajoutez le code correspondant à l'Option 1 ici
+            ;;
+        3)
             echo "Installation du thème Enigma."
             # Ajoutez le code correspondant à l'Option 2 ici
             ;;
-        3)
-            echo "Ré-installer le thème de Pterodactyl. (RESET UI), (N'affecte pas les machines déjà installer)"
+        4)
+            echo "Ré-installer le thème de Pterodactyl. (RESET UI)"
+            echo "N'affecte pas les machines déjà installer"
             # Ajoutez le code correspondant à l'Option 3 ici
             ;;
-        4)
+        5)
             echo "Au revoir !"
             exit 0
             ;;
         *)
-            echo "Choix non valide. Veuillez entrer un numéro entre 1 et 4."
+            echo "Choix non valide. Veuillez entrer un numéro entre 1 et 5."
             ;;
     esac
 done
