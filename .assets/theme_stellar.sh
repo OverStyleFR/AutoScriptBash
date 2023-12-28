@@ -111,7 +111,7 @@ choice_two() {
     cd /var/www/pterodactyl/ || exit
 
     # Construire la version de production
-        echo ""
+    echo ""
     echo "${VIOLET}${BOLD}Re-build du thème en cour...${RESET}"
     echo ""
     yarn build:production > /dev/null 2>&1
