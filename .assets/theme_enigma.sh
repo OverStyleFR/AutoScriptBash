@@ -85,7 +85,9 @@ cd /var/www/pterodactyl && php artisan view:clear > /dev/null 2>&1 && php artisa
 
 ### BUILD ###
 
+echo ""
 echo "${VIOLET}${BOLD}Re-build du thème en cour...${RESET}"
+echo ""
 yarn build:production > /dev/null 2>&1
 echo "${GREEN}${BOLD}Build Terminé !.${RESET}"
 echo ""
