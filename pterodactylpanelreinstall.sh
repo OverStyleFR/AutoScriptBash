@@ -75,7 +75,7 @@ echo ""
 echo "${VIOLET}${BOLD}Build du panel Pterodactyl${RESET}"
 echo ""
 
-composer install --no-dev --optimize-autoloader
+composer install --no-dev --optimize-autoloader <<< yes
 chown -R www-data:www-data /var/www/pterodactyl/*
 
 # FIN
