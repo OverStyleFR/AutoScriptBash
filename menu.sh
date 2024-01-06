@@ -48,7 +48,7 @@ while true; do
 
 
     # Lecture du choix de l'utilisateur
-    read -p "Choisissez une option (1-6) : " choix
+    read -p "Choisissez une option (1-7) : " choix
 
     # Traitement du choix
     case $choix in
@@ -79,6 +79,11 @@ while true; do
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh)
             ;;
         6)
+            echo "Exécution du script 'massgrave.cmd'."
+            # Ajoutez le code correspondant à l'Option 4 ici
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh)
+            ;;
+        7)
             echo "Au revoir !"
             exit 0
             ;;
