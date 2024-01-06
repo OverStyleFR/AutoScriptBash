@@ -32,13 +32,13 @@ while true; do
     echo ""
     echo "                +-------------+"
     echo "                |    Script : |"
-    echo "  +-------------+------------ +--------------+"
-    echo "  | 3. Exécuter 'new.sh'                     |"
-    echo "  |                                          |"
-    echo "  | 4. Exécuter 'speedtest.sh'               |"
-    echo "  |                                          |"
-    echo "  | 5. Exécuter 'massgrave.cmd'              |"
-    echo "  +---------------------------+--------------+"
+    echo "  +-------------+------------ +----------------+"
+    echo "  | 3. Exécuter 'new.sh'                       |"
+    echo "  |                                            |"
+    echo "  | 4. Exécuter 'speedtest.sh'                 |"
+    echo "  |                                            |"
+    echo "  | 5. Exécuter 'pterodactyl-panel-reinstaller'|"
+    echo "  +---------------------------+----------------+"
     echo "                | 6. Quitter |"
     echo "                +------------+"
 
@@ -72,7 +72,7 @@ while true; do
         5)
             echo "Exécution du script 'massgrave.cmd'."
             # Ajoutez le code correspondant à l'Option 4 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/massgrave.cmd)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh)
             ;;
         6)
             echo "Au revoir !"
