@@ -5,6 +5,7 @@ GREEN=$(tput setaf 2)
 RED=$(tput setaf 1)
 BLUE=$(tput setaf 4)
 VIOLET=$(tput setaf 5)
+YELLOW=$(tput setaf 3)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
 ########################################## INITIALISATION ROOT ##########################################
@@ -22,24 +23,27 @@ fi
 while true; do
     # Affichage du menu
     echo "                +------------+"
-    echo "                |   Menu :   |"
+    echo "                |   ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} :${RESET}   |"
     echo "       +--------+------------+----------+"
-    echo "       |         Installation           |       "
+    echo "       |         ${VIOLET}${BOLD}Installation${RESET}${BOLD} :${RESET}         |"
     echo "+------+--------------------------------+------+"
     echo "|  1. Installer docker                         |"
     echo "|  2. Installer yarn                           |"
     echo "+----------------------------------------------+"
     echo ""
     echo "                +-------------+"
-    echo "                |    Script : |"
-    echo "  +-------------+------------ +----------------+"
+    echo "                |  ${GREEN}${BOLD}Script${RESET}${BOLD} :${RESET}   |"
+    echo "  +-------------+-------------+----------------+"
     echo "  | 3. Exécuter 'new.sh'                       |"
     echo "  |                                            |"
     echo "  | 4. Exécuter 'speedtest.sh'                 |"
     echo "  |                                            |"
     echo "  | 5. Exécuter 'pterodactyl-panel-reinstaller'|"
     echo "  +---------------------------+----------------+"
-    echo "                | 6. Quitter |"
+    echo "  | 6. ${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}            |"
+    echo "  | └ ${YELLOW}${BOLD}OverStyleFR/Pterodactyl-Installer-Menu${RESET}   |"
+    echo "  +-------------+------------+-----------------+"
+    echo "                | ${RED}${BOLD}7. Quitter${RESET} |"
     echo "                +------------+"
 
 
