@@ -50,31 +50,29 @@ while true; do
     case $choix in
         
         1)
-            echo "Installation de Pterodactyl."
+            echo "Installation de Docker."
             # Ajoutez le code correspondant à l'Option 1 ici
-            bash <(curl -s https://raw.githubusercontent.com/LucieFairePy/Pterodactyl-Installer-FR/main/install.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/dockerinstall.sh)
             ;;
         2)
-            echo "Installation du thème Stellar v3.3."
+            echo "Installation de Yarn."
             # Ajoutez le code correspondant à l'Option 2 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/.assets/initialisation.sh)
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/.assets/theme_stellar.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/yarninstall.sh)
             ;;
         3)
-            echo "Installation du thème Enigma v3.9."
+            echo "Exécution du script 'new.sh'."
             # Ajoutez le code correspondant à l'Option 3 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/.assets/initialisation.sh)
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/.assets/theme_enigma.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/new.sh)
             ;;
         4)
-            echo "Installation du thème Billing Module"
+            echo "Exécution du script 'speedtest.sh'."
             # Ajoutez le code correspondant à l'Option 4 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/.assets/theme_billing.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh)
             ;;
         5)
-            echo "Installation du thème Billing Module"
+            echo "Exécution du script 'massgrave.cmd'."
             # Ajoutez le code correspondant à l'Option 4 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/.assets/theme_billing.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/massgrave.cmd)
             ;;
         6)
             echo "Au revoir !"

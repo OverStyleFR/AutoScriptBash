@@ -10,6 +10,12 @@ Crées par moi même il permette d'installer des petit ou gros programme, mais a
 
 ## Usage
 
+***
+```bash
+bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu.sh)
+```
+***
+
 ***MARCHE UNIQUEMENT SUR LINUX***
 
 * Prend le lien de n'importe quel script (requis `curl`)
