@@ -15,9 +15,8 @@ fi
 #################################################### FIN ####################################################
 
 apt update
-apt install gnupg{,2} -y
-echo "deb  https://packagecloud.io/ookla/speedtest-cli/debian/ bullseye main" > /etc/apt/sources.list.d/ookla_speedtest-cli.list
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8E61C2AB9A6D1557
+apt install gnupg{,2} curl -y
+curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
 apt update
 apt install speedtest -y
 speedtest --accept-license -s 24215
