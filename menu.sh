@@ -43,7 +43,10 @@ while true; do
     echo "  | 6. ${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}            |"
     echo "  | └ ${YELLOW}${BOLD}OverStyleFR/Pterodactyl-Installer-Menu${RESET}   |"
     echo "  +-------------+------------+-----------------+"
-    echo "                | ${RED}${BOLD}7. Quitter${RESET} |"
+    echo "  | 7. ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} SSH ${RESET}            |"
+    echo "  | └ ${VIOLET}${BOLD}OverStyleFR/AutoScriptBash${RESET}   |"
+    echo "  +-------------+------------+-----------------+"
+    echo "                | ${RED}${BOLD}8. Quitter${RESET} |"
     echo "                +------------+"
 
 
@@ -84,6 +87,11 @@ while true; do
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh)
             ;;
         7)
+            echo "${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} SSH ${RESET}"
+            # Ajoutez le code correspondant à l'Option 4 ici
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu_id.sh)
+            ;;
+        8)
             echo "Au revoir !"
             exit 0
             ;;
