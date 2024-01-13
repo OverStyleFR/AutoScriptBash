@@ -39,19 +39,19 @@ while true; do
     echo "  | 4. Exécuter 'speedtest.sh'                 |"
     echo "  |                                            |"
     echo "  | 5. Exécuter 'pterodactyl-panel-reinstaller'|"
-    echo "  +---------------------------+----------------+"
+    echo "  +--------------------------------------------+"
     echo "  | 6. ${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}            |"
     echo "  | └ ${YELLOW}${BOLD}OverStyleFR/Pterodactyl-Installer-Menu${RESET}   |"
-    echo "  +-------------+------------+-----------------+"
-    echo "  | 7. ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} SSH ${RESET}            |"
-    echo "  | └ ${VIOLET}${BOLD}OverStyleFR/AutoScriptBash${RESET}   |"
+    echo "  +--------------------------------------------+"
+    echo "  | 7. ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} SSH ${RESET}                               |"
+    echo "  | └ ${VIOLET}${BOLD}OverStyleFR/AutoScriptBash${RESET}               |"
     echo "  +-------------+------------+-----------------+"
     echo "                | ${RED}${BOLD}8. Quitter${RESET} |"
     echo "                +------------+"
 
 
     # Lecture du choix de l'utilisateur
-    read -p "Choisissez une option (1-7) : " choix
+    read -p "Choisissez une option (1-8) : " choix
 
     # Traitement du choix
     case $choix in

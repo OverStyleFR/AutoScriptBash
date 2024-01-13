@@ -43,7 +43,7 @@ while true; do
 
 
     # Lecture du choix de l'utilisateur
-    read -p "Choisissez une option (1-7) : " choix
+    read -p "Choisissez une option (1-5) : " choix
 
     # Traitement du choix
     case $choix in
