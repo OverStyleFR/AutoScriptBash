@@ -53,12 +53,12 @@ while true; do
         1)
             echo "Exécuter le ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${GREEN}${BOLD}.sh${RESET}"
             # Ajoutez le code correspondant à l'Option 1 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/dockerinstall.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu.sh)
             ;;
         2)
             echo "Exécuter le ${BLUE}${BOLD}Pterodactyl Menu${RESET}"
             # Ajoutez le code correspondant à l'Option 2 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/yarninstall.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh)
             ;;
         3)
             echo "Ajouter '${VIOLET}${BOLD}id_ed25519${RESET}'        |   ${VIOLET}${BOLD}Main${RESET}    |"
