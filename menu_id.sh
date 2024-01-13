@@ -61,12 +61,12 @@ while true; do
         3)
             echo "Ajouter '${VIOLET}${BOLD}id_ed25519${RESET}'        |   ${VIOLET}${BOLD}Main${RESET}    |"
             # Ajoutez le code correspondant à l'Option 3 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/new.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/id_ed25519.sh)
             ;;
         4)
             echo "Ajouter '${VIOLET}${BOLD}id_ed25519${RESET}_${YELLOW}${BOLD}sk${RESET}'     | ${VIOLET}${BOLD}Main ${YELLOW}${BOLD}Yubi${RESET} |"
             # Ajoutez le code correspondant à l'Option 4 ici
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh)
+            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/id_ed25519_sk.sh)
             ;;
         5)
             echo "Au revoir !"
