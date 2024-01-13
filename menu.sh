@@ -74,12 +74,12 @@ while true; do
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh)
             ;;
         5)
-            echo "Exécution du script 'massgrave.cmd'."
+            echo "Exécuter 'pterodactyl-panel-reinstaller"
             # Ajoutez le code correspondant à l'Option 4 ici
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh)
             ;;
         6)
-            echo "Exécution du script 'massgrave.cmd'."
+            echo "${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}"
             # Ajoutez le code correspondant à l'Option 4 ici
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh)
             ;;
