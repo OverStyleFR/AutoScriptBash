@@ -23,6 +23,6 @@ apt install gnupg{,2} lm-sensors curl wget htop nload screenfetch screen vim git
 
 cd
 rm .bashrc
-curl -O https://get.tomv.ovh/.bashrc
+curl -O https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/.bashrc
 source .bashrc
 
