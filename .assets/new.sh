@@ -16,13 +16,13 @@ fi
 
 apt update -y && apt full-upgrade --autoremove --purge -y
 
-apt install gnupg{,2} lm-sensors curl wget htop nload screenfetch screen vim git ncdu bpytop rsync -y
+apt install gnupg{,2} lm-sensors curl wget htop nload screenfetch screen vim git ncdu bpytop rsync man avahi-daemon -y
 
 # Initialisation IP #
 (crontab -l ; echo "@reboot /bin/ping -c 5 1.1") | crontab -
 
 cd
 rm .bashrc
-curl -O https://get.tomv.ovh/.bashrc
+curl -O https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/.bashrc
 source .bashrc
 

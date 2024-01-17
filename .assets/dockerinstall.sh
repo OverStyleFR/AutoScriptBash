@@ -19,6 +19,26 @@ fi
 
 # Le reste du script ici
 
+########################### ISSUE DOCKER ############################# [https://copyprogramming.com/howto/error-starting-docker-daemon-on-ubuntu-14-04-devices-cgroup-isn-t-mounted]
+
+# Vérifier si le package est installé
+if dpkg -l | grep -q "cgroupfs-mount"; then
+    echo "Le package cgroupfs-mount est déjà installé."
+else
+    # Installer le package s'il n'est pas installé
+    echo "Le package cgroupfs-mount n'est pas installé. Installation en cours..."
+    apt-get update
+    apt-get install -y cgroupfs-mount
+
+    # Vérifier si l'installation a réussi
+    if [ $? -eq 0 ]; then
+        echo "L'installation du package cgroupfs-mount a réussi."
+    else
+        echo "Erreur lors de l'installation du package cgroupfs-mount."
+        exit 1
+    fi
+fi
+
 ########################### DOCKER INSTALL ########################### [https://docs.docker.com/engine/install/debian/]
 
 # Préparation #

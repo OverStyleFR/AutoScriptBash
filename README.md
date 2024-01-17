@@ -2,13 +2,14 @@
 
 ## Description 
 
-Des petits script automatique pour faciliter la vie des sys-admin.
+La repository `AutoScriptBash` est un endroit open source où vous pouvez trouver différents outils/scripts à exécuter, principalement sur Linux, afin de simplifier votre vie et d'être plus productif. Créés par moi-même, ils permettent d'installer divers outils, que ce soit des petits ou gros programmes.
 
-Crées par moi même il permette d'installer des petit ou gros programme, mais aussi permette de préparer une machine.
+> **Vous trouverez le menu principal de la repository sur mon [cloud public](https://get.tomv.ovh), afin d'avoir une URL plus facile à mémoriser.**
 
-> **Script héberger sur le [git](https://git.foryouhost.fr/tomv) mais aussi sur mon [cloud public](https://get.tomv.ovh)**
 
 ## Usage
+
+**Menu Principale - [GitHub](https://github.com/overstylefr)**
 
 ***
 ```bash
@@ -16,41 +17,25 @@ bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main
 ```
 ***
 
-***MARCHE UNIQUEMENT SUR LINUX***
+**Menu Principale - [Cloud Public](https://get.tomv.ovh)**
 
-* Prend le lien de n'importe quel script (requis `curl`)
-* Puis pour l'éxécuter faites : `bash <(curl -s [lien script])`
-
-## Script Crées
-
-### Héberger sur [GitHub](https://github.com/OverStyleFR)
-
-* [new.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/new.sh) | Permet de installer les principaux packages après l'installation d'une **nouvelle machine sous __Linux__**.
-* [speedtest.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/speedtest.sh) | Permet d'installer l'utilitaire `speedtest` de Ookla <sub>(qui est buger)</sub> sur Linux. **→** Fait par Martin Oscar et adapté par moi.
-* [minecraft.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/minecraft.sh) | Permet d'installer n'importe quel version de Minecraft automatiquement. **(Pour l'instant il ne fait que la 1.16.5)**
-* [massgrave.cmd](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/massgrave.cmd) | Permet de crack Windows, change d'édition de Windows, crack la suite Office. **→** Fait par [massgrave](https://github.com/massgravel) lien de [l'original](https://github.com/massgravel/Microsoft-Activation-Scripts).
-* [user.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/user.sh) | Permet de crée un nouveau utilisateur **(a éxécuter en root)** avec un mot de passe définie ou pas (si c'est pas le cas, ca désactive l'authentification par mdp) et aussi demande si oui ou non on crée une nouvelle pair de clé SSH pour celui ci. Demande aussi si on dois mettre ma clé SSH publique ou une autre dans le fichier 'authorized_keys' pour se connecter avec celle ci. Demande également si on crée un dossier "gitea" dans le répertoire du nouveau utilisateur ainsi que si on dois mettre par défaut l'éditeur de texte `vim` pour git.
-* [startup.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/startup.sh) | Permet de, coupler au 'crontab -e' automatiser le démarrage d'un serveur FiveM a chaque démarrage du VPS. Il crée un screen avec un nom et dedans lance une commande.
-* [dockerinstall.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/dockerinstall.sh) | Permet l'installation de Docker dans sa dernière version.
-* [yarn_install.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/yarninstall.sh) | Permet l'installation de Yarn dans sa dernière version.
-* [Pterodactyl Theme Re-install](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/pterodactylpanelreinstall.sh) | Permet la ré-installation du thème panel Pterodactyl, ceci va revenir a celui par défaut.
-* [Pterodactyl Theme Installer](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/pterodactylthemeinstaller.sh) | Un menu pour pterodactyl qui permet différente choses comme installer Pterodactyl, installer 3 thèmes (Enigma, Billing, Stellar) ainsi que de ré-installer le thème pterodactyl.
+***
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/pterodactylthemeinstaller.sh)
+bash <(curl -s https://get.tomv.ovh/menu.sh)
 ```
+***
 
-### Héberger sur [get.tomv.ovh](https://get.tomv.ovh/)
+## Scripts Créés
 
-* [new.sh](https://get.tomv.ovh/new.sh) | Permet de installer les principaux packages après l'installation d'une **nouvelle machine sous __Linux__**.
-* [speedtest.sh](https://get.tomv.ovh/speedtest.sh) | Permet d'installer l'utilitaire `speedtest` de Ookla <sub>(qui est buger)</sub> sur Linux. **→** Fait par Martin Oscar et adapté par moi.
-* [minecraft.sh](https://get.tomv.ovh/minecraft.sh) | Permet d'installer n'importe quel version de Minecraft automatiquement. **(Pour l'instant il ne fait que la 1.16.5)**
-* [massgrave.cmd](https://get.tomv.ovh/massgrave.cmd) | Permet de crack Windows, change d'édition de Windows, crack la suite Office. **→** Fait par [massgrave](https://github.com/massgravel) lien de [l'original](https://github.com/massgravel/Microsoft-Activation-Scripts).
-* [user.sh](https://get.tomv.ovh/user.sh) | Permet de crée un nouveau utilisateur **(a éxécuter en root)** avec un mot de passe définie ou pas (si c'est pas le cas, ca désactive l'authentification par mdp) et aussi demande si oui ou non on crée une nouvelle pair de clé SSH pour celui ci. Demande aussi si on dois mettre ma clé SSH publique ou une autre dans le fichier 'authorized_keys' pour se connecter avec celle ci. Demande également si on crée un dossier "gitea" dans le répertoire du nouveau utilisateur ainsi que si on dois mettre par défaut l'éditeur de texte `vim` pour git.
-* [startup.sh](https://get.tomv.ovh/startup.sh) | Permet de, coupler au 'crontab -e' automatiser le démarrage d'un serveur FiveM a chaque démarrage du VPS. Il crée un screen avec un nom et dedans lance une commande.
-* [docker_install.sh](https://get.tomv.ovh/dockerinstall.sh) | Permet l'installation de Docker dans sa dernière version.
-* [yarn_install.sh](https://get.tomv.ovh/yarninstall.sh) | Permet l'installation de Yarn dans sa dernière version.
-* [pterodactylpanelreinstall.sh](https://get.tomv.ovh/pterodactylpanelreinstall.sh)) | Permet la ré-installation du thème panel Pterodactyl, ceci va revenir a celui par défaut.
-* [Pterodactyl Theme Installer](https://get.tomv.ovh/pterodactylthemeinstaller.sh) | Un menu pour pterodactyl qui permet différente choses comme installer Pterodactyl, installer 3 thèmes (Enigma, Billing, Stellar) ainsi que de ré-installer le thème pterodactyl.
-```bash
-bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/pterodactylthemeinstaller.sh)
-```
+| Script                                          | Description                                                                                                                                                  |
+|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [new.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/new.sh)                   | Installe les principaux paquets après la configuration d'une nouvelle machine sous Linux.                                                                  |
+| [speedtest.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/speedtest.sh)         | Installe l'utilitaire `speedtest` de Ookla sur Linux. Créé à l'origne par Martin Oscar et adapté par moi.                                                 |
+| [minecraft.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/minecraft.sh)         | Installe automatiquement n'importe quelle version de Minecraft. (Actuellement, il prend en charge uniquement la version 1.16.5)                                  |
+| [massgrave.cmd](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/massgrave.cmd)        | Active Windows, modifie l'édition de Windows, et active la suite Office. Créé par [massgrave](https://github.com/massgravel), lien vers [l'original](https://github.com/massgravel/Microsoft-Activation-Scripts).|
+| [user.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/user.sh)                  | Crée un nouvel utilisateur (à exécuter en tant que root) avec un mot de passe défini ou non. Désactive l'authentification par mot de passe si non défini. Demande également la création d'une nouvelle paire de clés SSH et d'autres configurations. |
+| [startup_fivem.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/startup_fivem.sh)            | Automatise le démarrage d'un serveur FiveM à chaque démarrage du VPS. Crée une session et lance une commande à l'intérieur.                                      |
+| [dockerinstall.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/dockerinstall.sh)    | Installe Docker dans sa dernière version.                                                                                                                     |
+| [yarn_install.sh](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/yarninstall.sh)    | Installe Yarn dans sa dernière version.                                                                                                                       |
+| [Pterodactyl Theme Re-install](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/pterodactylpanelreinstall.sh) | Réinstalle le thème par défaut du panel Pterodactyl.                                             |
+| [Pterodactyl Theme Installer](https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/pterodactylthemeinstaller.sh) | Menu Pterodactyl offrant diverses actions, telles qu'installer Pterodactyl, installer 3 thèmes (Enigma, Billing, Stellar) et réinstaller le thème Pterodactyl.   |
