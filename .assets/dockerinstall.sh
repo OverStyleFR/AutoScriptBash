@@ -27,8 +27,8 @@ if dpkg -l | grep -q "cgroupfs-mount"; then
 else
     # Installer le package s'il n'est pas installé
     echo "Le package cgroupfs-mount n'est pas installé. Installation en cours..."
-    sudo apt-get update
-    sudo apt-get install -y cgroupfs-mount
+    apt-get update
+    apt-get install -y cgroupfs-mount
 
     # Vérifier si l'installation a réussi
     if [ $? -eq 0 ]; then
