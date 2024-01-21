@@ -16,7 +16,7 @@ fi
 
 apt update
 apt install gnupg{,2} curl -y
-curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | bash
 apt update
 apt install speedtest -y
 speedtest --accept-license -s 24215
