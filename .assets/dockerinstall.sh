@@ -108,7 +108,7 @@ echo ""
 cd
 mkdir Docker
 cd Docker
-mkdir application
+mkdir applications
 touch docker-compose.yml
 bash
 #####################################################################
