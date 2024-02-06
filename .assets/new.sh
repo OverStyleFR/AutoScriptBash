@@ -16,7 +16,7 @@ fi
 
 apt update -y && apt full-upgrade --autoremove --purge -y
 
-apt install gnupg{,2} lm-sensors curl wget htop nload screenfetch screen vim git ncdu bpytop rsync man avahi-daemon -y
+apt install gnupg{,2} lm-sensors curl wget htop nload screenfetch screen vim git ncdu bpytop rsync man avahi-daemon tree -y
 
 # Initialisation IP #
 (crontab -l ; echo "@reboot /bin/ping -c 5 1.1") | crontab -
