@@ -21,4 +21,4 @@ apt-get remove speedtest-cli
 curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | bash
 apt update
 apt install speedtest -y
-speedtest --accept-license -s 24215
+speedtest
