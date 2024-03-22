@@ -14,8 +14,10 @@ fi
 
 #################################################### FIN ####################################################
 
+rm /etc/apt/sources.list.d/speedtest.list
 apt update
 apt install gnupg{,2} curl -y
+apt-get remove speedtest-cli
 curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | bash
 apt update
 apt install speedtest -y
