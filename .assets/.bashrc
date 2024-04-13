@@ -18,6 +18,8 @@ alias l='ls $LS_OPTIONS -lAh'
 # alias mv='mv -i'
 PS1='${debian_chroot:+($debian_chroot)}\[\033[01;31m\]\u\[\033[01;33m\]@\[\033[01;36m\]\h \[\033[01;33m\]\w \[\033[01;35m\]💻\$ \[\033[00m\]'
 
+alias tomvmenu='bash <(curl -s https://get.tomv.ovh/menu.sh)'
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
