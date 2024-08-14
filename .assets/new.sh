@@ -18,6 +18,10 @@ apt update -y && apt full-upgrade --autoremove --purge -y
 
 apt install gnupg{,2} lm-sensors curl wget htop nload screenfetch screen vim git ncdu bpytop rsync man avahi-daemon tree dnsutils -y
 
+# Installation de 'fastfetch' (remplacement de 'neofetch')
+echo "Installation du paquet FastFetch"
+bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/fastfetch-install-auto.sh)
+
 # Mettre l'heure de Europe/Paris
 sudo timedatectl set-timezone Europe/Paris
 
