@@ -47,7 +47,3 @@ fi
 # Installation du paquet Debian
 echo_color "34" "Installation du paquet $FILENAME..."
 sudo dpkg -i "$FILENAME" &> /dev/null
-
-# Suppression automatique du fichier temporaire
-rm "$FILENAME"
-echo_color "32" "Fichier $FILENAME supprimé."

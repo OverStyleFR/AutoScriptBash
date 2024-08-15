@@ -48,12 +48,6 @@ fi
 echo_color "34" "Installation du paquet $FILENAME..."
 sudo dpkg -i "$FILENAME" &> /dev/null
 
-# Demande de suppression du fichier temporaire
-read -p "Voulez-vous supprimer le fichier temporaire $FILENAME ? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  rm "$FILENAME"
-  echo_color "32" "Fichier $FILENAME supprimé."
-else
-  echo_color "33" "Fichier $FILENAME conservé."
-fi
+# Suppression automatique du fichier temporaire
+rm "$FILENAME"
+echo_color "32" "Fichier $FILENAME supprimé."
