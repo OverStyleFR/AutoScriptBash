@@ -16,7 +16,7 @@ fi
 
 apt update -y && apt full-upgrade --autoremove --purge -y
 
-apt install gnupg{,2} lm-sensors curl wget htop nload screen vim git ncdu bpytop rsync man avahi-daemon tree dnsutils net-tools -y
+apt install gnupg{,2} lm-sensors curl wget htop nload screen vim git ncdu bpytop rsync man avahi-daemon tree dnsutils net-tools ripgrep -y
 
 # Installation de 'fastfetch' (remplacement de 'neofetch')
 echo "Installation du paquet FastFetch"
