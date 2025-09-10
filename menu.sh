@@ -63,16 +63,16 @@ while true; do
             echo "Installation de Yarn."
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/yarninstall.sh)
             ;;
-        3)
-            echo "Exécution du script 'new.sh'."
+    	3)
+            echo "ExÃ©cution du script 'new.sh'."
             if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/new.sh); then
-                echo "Script 'new.sh' exécuté avec succès."
+                echo "Script 'new.sh' exÃ©cutÃ© avec succÃ¨s."
             else
-                err "Erreur lors de l'exécution du script 'new.sh'."
+                err "Erreur lors de l'exÃ©cution du script 'new.sh'."
             fi
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
-        4)
+    	4)
             echo "Exécution du script 'speedtest.sh'."
             if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh); then
                 echo "Script 'speedtest.sh' exécuté avec succès."
