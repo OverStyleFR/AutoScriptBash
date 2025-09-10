@@ -288,7 +288,7 @@ if command -v crontab >/dev/null 2>&1; then
     echo "[DRYRUN] crontab append: @reboot /bin/ping -c 5 1.1.1.1 >/dev/null 2>&1 || true"
   fi
 else
-  warn "crontab indisponible (cron non installé ?)"
+  warn "crontab indisponible (cron non installÃ© ?)"
 fi
 
 # ============================== .bashrc perso =================================
