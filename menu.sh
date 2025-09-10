@@ -7,6 +7,7 @@ VIOLET=$(tput setaf 5)
 YELLOW=$(tput setaf 3)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
+
 ########################################## INITIALISATION ROOT ##########################################
 # Vérifier si l'utilisateur est root
 if [[ $EUID -ne 0 ]]; then
@@ -15,6 +16,7 @@ if [[ $EUID -ne 0 ]]; then
    sudo "$0" "$@"
    exit 1
 fi
+
 # Le reste du script ici
 clear
 while true; do
@@ -47,8 +49,10 @@ while true; do
     echo "  +-------------+------------+-----------------+"
     echo "                | ${RED}${BOLD}9. Quitter${RESET} |"
     echo "                +------------+"
+    
     # Lecture du choix de l'utilisateur
     read -p "Choisissez une option (1-9) : " choix
+    
     # Traitement du choix
     case $choix in
         1)
@@ -61,19 +65,39 @@ while true; do
             ;;
         3)
             echo "Exécution du script 'new.sh'."
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/new.sh)
+            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/new.sh); then
+                echo "Script 'new.sh' exécuté avec succès."
+            else
+                echo "Erreur lors de l'exécution du script 'new.sh'."
+            fi
+            read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
         4)
             echo "Exécution du script 'speedtest.sh'."
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh)
+            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh); then
+                echo "Script 'speedtest.sh' exécuté avec succès."
+            else
+                echo "Erreur lors de l'exécution du script 'speedtest.sh'."
+            fi
+            read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
         5)
             echo "Exécution du script 'fastfetch.sh'."
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/main/.assets/fastfetch-install.sh)
+            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/main/.assets/fastfetch-install.sh); then
+                echo "Script 'fastfetch.sh' exécuté avec succès."
+            else
+                echo "Erreur lors de l'exécution du script 'fastfetch.sh'."
+            fi
+            read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
         6)
             echo "Exécuter 'pterodactyl-panel-reinstaller'"
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh)
+            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh); then
+                echo "Script 'pterodactyl-panel-reinstaller' exécuté avec succès."
+            else
+                echo "Erreur lors de l'exécution du script 'pterodactyl-panel-reinstaller'."
+            fi
+            read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
         7)
             echo "${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}"
@@ -92,4 +116,3 @@ while true; do
             ;;
     esac
 done
-
