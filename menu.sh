@@ -68,7 +68,7 @@ while true; do
             if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/new.sh); then
                 echo "Script 'new.sh' exécuté avec succès."
             else
-                echo "Erreur lors de l'exécution du script 'new.sh'."
+                err "Erreur lors de l'exécution du script 'new.sh'."
             fi
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
@@ -77,7 +77,7 @@ while true; do
             if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh); then
                 echo "Script 'speedtest.sh' exécuté avec succès."
             else
-                echo "Erreur lors de l'exécution du script 'speedtest.sh'."
+                err "Erreur lors de l'exécution du script 'speedtest.sh'."
             fi
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
@@ -86,7 +86,7 @@ while true; do
             if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/main/.assets/fastfetch-install.sh); then
                 echo "Script 'fastfetch.sh' exécuté avec succès."
             else
-                echo "Erreur lors de l'exécution du script 'fastfetch.sh'."
+                err "Erreur lors de l'exécution du script 'fastfetch.sh'."
             fi
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
@@ -95,7 +95,7 @@ while true; do
             if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh); then
                 echo "Script 'pterodactyl-panel-reinstaller' exécuté avec succès."
             else
-                echo "Erreur lors de l'exécution du script 'pterodactyl-panel-reinstaller'."
+                err "Erreur lors de l'exécution du script 'pterodactyl-panel-reinstaller'."
             fi
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
@@ -116,3 +116,4 @@ while true; do
             ;;
     esac
 done
+
