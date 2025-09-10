@@ -64,48 +64,45 @@ while true; do
             bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/yarninstall.sh)
             ;;
     	3)
-            echo "ExÃ©cution du script 'new.sh'."
-            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/new.sh); then
-                echo "Script 'new.sh' exÃ©cutÃ© avec succÃ¨s."
-            else
-                err "Erreur lors de l'exÃ©cution du script 'new.sh'."
-            fi
+            echo "Exécution du script 'new.sh'."
+            # Télécharge et exécute le script new.sh depuis /tmp
+            tmp_file="/tmp/new.sh"
+            curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/fix/script-new-interactive-mode/.assets/new.sh -o "$tmp_file" && chmod +x "$tmp_file"
+            bash "$tmp_file" && rm -f "$tmp_file"  # Exécution et suppression du script
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
     	4)
             echo "Exécution du script 'speedtest.sh'."
-            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh); then
-                echo "Script 'speedtest.sh' exécuté avec succès."
-            else
-                err "Erreur lors de l'exécution du script 'speedtest.sh'."
-            fi
+            tmp_file="/tmp/speedtest.sh"
+            curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh -o "$tmp_file" && chmod +x "$tmp_file"
+            bash "$tmp_file" && rm -f "$tmp_file"
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
         5)
             echo "Exécution du script 'fastfetch.sh'."
-            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/main/.assets/fastfetch-install.sh); then
-                echo "Script 'fastfetch.sh' exécuté avec succès."
-            else
-                err "Erreur lors de l'exécution du script 'fastfetch.sh'."
-            fi
+            tmp_file="/tmp/fastfetch.sh"
+            curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/main/.assets/fastfetch-install.sh -o "$tmp_file" && chmod +x "$tmp_file"
+            bash "$tmp_file" && rm -f "$tmp_file"
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
         6)
-            echo "Exécuter 'pterodactyl-panel-reinstaller'"
-            if bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh); then
-                echo "Script 'pterodactyl-panel-reinstaller' exécuté avec succès."
-            else
-                err "Erreur lors de l'exécution du script 'pterodactyl-panel-reinstaller'."
-            fi
+            echo "Exécution du script 'pterodactyl-panel-reinstaller'"
+            tmp_file="/tmp/pterodactylpanelreinstall.sh"
+            curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh -o "$tmp_file" && chmod +x "$tmp_file"
+            bash "$tmp_file" && rm -f "$tmp_file"
             read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..."
             ;;
         7)
             echo "${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}"
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh)
+            tmp_file="/tmp/PterodactylMenu.sh"
+            curl -s https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh -o "$tmp_file" && chmod +x "$tmp_file"
+            bash "$tmp_file" && rm -f "$tmp_file"
             ;;
         8)
             echo "${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} SSH ${RESET}"
-            bash <(curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu_id.sh)
+            tmp_file="/tmp/menu_id.sh"
+            curl -s https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu_id.sh -o "$tmp_file" && chmod +x "$tmp_file"
+            bash "$tmp_file" && rm -f "$tmp_file"
             ;;
         9)
             echo "Au revoir !"
@@ -116,4 +113,3 @@ while true; do
             ;;
     esac
 done
-
