@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# menu.sh — Lanceur interactif des scripts OverStyleFR
+# menu.sh â Lanceur interactif des scripts OverStyleFR
 #
 # USAGE :
 #   sudo ./menu.sh
 #
-# CARACTÉRISTIQUES :
+# CARACTÃRISTIQUES :
 #   - Menu en boucle (1..9)
-#   - Vérifie root, relance via sudo si nécessaire
+#   - VÃ©rifie root, relance via sudo si nÃ©cessaire
 #   - Couleurs avec fallback si tput indisponible
-#   - Télécharge chaque script dans /tmp avec mktemp, exécute, affiche le statut
+#   - TÃ©lÃ©charge chaque script dans /tmp avec mktemp, exÃ©cute, affiche le statut
 #   - Nettoyage auto des fichiers temporaires
 # ==============================================================================
 
@@ -25,9 +25,9 @@ else
   GREEN=""; RED=""; BLUE=""; VIOLET=""; YELLOW=""; BOLD=""; RESET=""
 fi
 
-# ------------------------------ Vérif root ------------------------------------
+# ------------------------------ VÃ©rif root ------------------------------------
 if [[ ${EUID:-$UID} -ne 0 ]]; then
-  echo -e "${RED}${BOLD}Ce script doit être exécuté en tant que root.${RESET}"
+  echo -e "${RED}${BOLD}Ce script doit Ãªtre exÃ©cutÃ© en tant que root.${RESET}"
   exec sudo -E bash "$0" "$@"
 fi
 
@@ -48,21 +48,21 @@ download_to_tmp() {
   # $1=url  $2=prefix (nom lisible)
   local url="$1" prefix="${2:-script}"
   local tmp
-  tmp="$(mktemp -p /tmp "${prefix}.XXXXXX")" || { echo -e "${RED}${BOLD}mktemp a échoué${RESET}"; return 98; }
+  tmp="$(mktemp -p /tmp "${prefix}.XXXXXX")" || { echo -e "${RED}${BOLD}mktemp a Ã©chouÃ©${RESET}"; return 98; }
 
-  # Nettoyage automatique à la sortie de la fonction:
+  # Nettoyage automatique Ã  la sortie de la fonction:
   trap 'rm -f "$tmp" 2>/dev/null || true' RETURN
 
   if command -v curl >/dev/null 2>&1; then
     if ! curl -fsSL --retry 3 --retry-delay 1 "$url" -o "$tmp"; then
-      echo -e "${RED}${BOLD}Téléchargement échoué (curl)${RESET}"; return 90
+      echo -e "${RED}${BOLD}TÃ©lÃ©chargement Ã©chouÃ© (curl)${RESET}"; return 90
     fi
   elif command -v wget >/dev/null 2>&1; then
     if ! wget -q "$url" -O "$tmp"; then
-      echo -e "${RED}${BOLD}Téléchargement échoué (wget)${RESET}"; return 90
+      echo -e "${RED}${BOLD}TÃ©lÃ©chargement Ã©chouÃ© (wget)${RESET}"; return 90
     fi
   else
-    echo -e "${RED}${BOLD}Ni curl ni wget disponible pour télécharger${RESET}"; return 91
+    echo -e "${RED}${BOLD}Ni curl ni wget disponible pour tÃ©lÃ©charger${RESET}"; return 91
   fi
 
   chmod +x "$tmp"
@@ -70,20 +70,20 @@ download_to_tmp() {
 }
 
 run_remote() {
-  # $1=url  $2=nom_affiché
+  # $1=url  $2=nom_affichÃ©
   local url="$1" label="${2:-script}"
-  echo -e "${YELLOW}${BOLD}Téléchargement de ${label}…${RESET}"
+  echo -e "${YELLOW}${BOLD}TÃ©lÃ©chargement de ${label}â¦${RESET}"
   local tmp rc
   if ! tmp="$(download_to_tmp "$url" "$label")"; then
-    echo -e "${RED}${BOLD}Échec de préparation pour ${label}${RESET}"
+    echo -e "${RED}${BOLD}Ãchec de prÃ©paration pour ${label}${RESET}"
     return 90
   fi
-  echo -e "${YELLOW}${BOLD}Exécution de ${label}…${RESET}"
+  echo -e "${YELLOW}${BOLD}ExÃ©cution de ${label}â¦${RESET}"
   bash "$tmp"; rc=$?
   if [[ $rc -eq 0 ]]; then
-    echo -e "${GREEN}${BOLD}✔ ${label} terminé avec succès${RESET}"
+    echo -e "${GREEN}${BOLD}â ${label} terminÃ© avec succÃ¨s${RESET}"
   else
-    echo -e "${RED}${BOLD}✘ ${label} a échoué (rc=${rc})${RESET}"
+    echo -e "${RED}${BOLD}â ${label} a Ã©chouÃ© (rc=${rc})${RESET}"
     # indice utile pour new.sh
     ls -1 /var/log/new-basics-*.log 2>/dev/null | tail -n 1 | sed "s/^/Dernier log: /"
   fi
@@ -104,19 +104,19 @@ draw_menu() {
   echo "                +-------------+"
   echo "                |  ${GREEN}${BOLD}Script${RESET}${BOLD} :${RESET}   |"
   echo "  +-------------+-------------+----------------+"
-  echo "  | 3. Exécuter 'new.sh'                       |"
+  echo "  | 3. ExÃ©cuter 'new.sh'                       |"
   echo "  |                                            |"
-  echo "  | 4. Exécuter 'speedtest.sh'                 |"
+  echo "  | 4. ExÃ©cuter 'speedtest.sh'                 |"
   echo "  |                                            |"
-  echo "  | 5. Exécuter 'fastfetch.sh'                 |"
+  echo "  | 5. ExÃ©cuter 'fastfetch.sh'                 |"
   echo "  |                                            |"
-  echo "  | 6. Exécuter 'pterodactyl-panel-reinstaller'|"
+  echo "  | 6. ExÃ©cuter 'pterodactyl-panel-reinstaller'|"
   echo "  +--------------------------------------------+"
-  echo "  | 7. ${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}            |"
-  echo "  | └ ${YELLOW}${BOLD}OverStyleFR/Pterodactyl-Installer-Menu${RESET}   |"
+  echo "  | 7. ${BLUE}${BOLD}ExÃ©cuter le Pterodactyl Menu${RESET}            |"
+  echo "  | â ${YELLOW}${BOLD}OverStyleFR/Pterodactyl-Installer-Menu${RESET}   |"
   echo "  +--------------------------------------------+"
   echo "  | 8. ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} SSH ${RESET}                               |"
-  echo "  | └ ${VIOLET}${BOLD}OverStyleFR/AutoScriptBash${RESET}               |"
+  echo "  | â ${VIOLET}${BOLD}OverStyleFR/AutoScriptBash${RESET}               |"
   echo "  +-------------+------------+-----------------+"
   echo "                | ${RED}${BOLD}9. Quitter${RESET} |"
   echo "                +------------+"
@@ -139,27 +139,27 @@ while true; do
       pause
       ;;
     3)
-      echo "Exécution du script 'new.sh'."
+      echo "ExÃ©cution du script 'new.sh'."
       run_remote "$NEW_URL" "new.sh"
       pause
       ;;
     4)
-      echo "Exécution du script 'speedtest.sh'."
+      echo "ExÃ©cution du script 'speedtest.sh'."
       run_remote "$SPEED_URL" "speedtest.sh"
       pause
       ;;
     5)
-      echo "Exécution du script 'fastfetch-install.sh'."
+      echo "ExÃ©cution du script 'fastfetch-install.sh'."
       run_remote "$FASTFETCH_URL" "fastfetch-install.sh"
       pause
       ;;
     6)
-      echo "Exécution du script 'pterodactyl-panel-reinstaller'."
+      echo "ExÃ©cution du script 'pterodactyl-panel-reinstaller'."
       run_remote "$PANEL_REINSTALL_URL" "pterodactylpanelreinstall.sh"
       pause
       ;;
     7)
-      echo -e "${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}"
+      echo -e "${BLUE}${BOLD}ExÃ©cuter le Pterodactyl Menu${RESET}"
       run_remote "$PTERO_MENU_URL" "PterodactylMenu.sh"
       pause
       ;;
@@ -171,7 +171,7 @@ while true; do
     9)
       echo "Au revoir !"; exit 0 ;;
     *)
-      echo -e "${RED}Choix non valide. Veuillez entrer un numéro entre 1 et 9.${RESET}"
+      echo -e "${RED}Choix non valide. Veuillez entrer un numÃ©ro entre 1 et 9.${RESET}"
       sleep 1
       ;;
   esac
