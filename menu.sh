@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# menu.sh — Lanceur interactif des scripts OverStyleFR
+# menu.sh — TUI façon raspi-config (whiptail/dialog) pour lancer les scripts
 #
 # USAGE :
 #   sudo ./menu.sh
@@ -8,123 +8,157 @@
 
 set -uo pipefail
 
-# ------------------------------- Couleurs -------------------------------------
-if command -v tput >/dev/null 2>&1 && [[ -t 1 ]]; then
-  GREEN="$(tput setaf 2)"; RED="$(tput setaf 1)"; BLUE="$(tput setaf 4)"
-  VIOLET="$(tput setaf 5)"; YELLOW="$(tput setaf 3)"
-  BOLD="$(tput bold)"; RESET="$(tput sgr0)"
-else
-  GREEN=""; RED=""; BLUE=""; VIOLET=""; YELLOW=""; BOLD=""; RESET=""
-fi
-
 # ------------------------------ Vérif root ------------------------------------
 if [[ ${EUID:-$UID} -ne 0 ]]; then
-  echo -e "${RED}${BOLD}Ce script doit être exécuté en tant que root.${RESET}"
+  echo "Ce script doit être exécuté en root."
   exec sudo -E bash "$0" "$@"
 fi
 
 # ----------------------------- URLs des scripts --------------------------------
 DOCKER_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/dockerinstall.sh"
 YARN_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/yarninstall.sh"
-NEW_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/main/.assets/new.sh"
+NEW_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/refs/heads/fix/script-new-interactive-mode/.assets/new.sh"
 SPEED_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/speedtest.sh"
 FASTFETCH_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/fastfetch-install.sh"
 PANEL_REINSTALL_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh"
 PTERO_MENU_URL="https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh"
 SSH_MENU_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu_id.sh"
 
-# ------------------------------- Helpers --------------------------------------
-pause() { read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..." ; echo; }
+# ------------------------------ UI backend ------------------------------------
+DIALOG_BIN=""
+if command -v whiptail >/dev/null 2>&1; then
+  DIALOG_BIN="whiptail"
+elif command -v dialog >/dev/null 2>&1; then
+  DIALOG_BIN="dialog"
+else
+  # petit essai d’installation silencieuse côté apt ; sinon fallback texte
+  if command -v apt-get >/dev/null 2>&1; then
+    apt-get update -y >/dev/null 2>&1 || true
+    apt-get install -y whiptail >/dev/null 2>&1 || true
+    command -v whiptail >/dev/null 2>&1 && DIALOG_BIN="whiptail"
+  fi
+fi
 
+msg_box() {
+  # $1 titre, $2 message
+  if [[ -n "$DIALOG_BIN" ]]; then
+    $DIALOG_BIN --title "$1" --msgbox "$2" 13 70
+  else
+    echo -e "\n==== $1 ====\n$2\n(Entrée pour continuer)"; read -r _
+  fi
+}
+
+# ------------------------------- Helpers --------------------------------------
 download_to_tmp() {
   # $1=url  $2=prefix (nom lisible)
-  local url="$1" prefix="${2:-script}"
-  local tmp
-  tmp="$(mktemp -p /tmp "${prefix}.XXXXXX")" || { echo -e "${RED}${BOLD}mktemp a échoué${RESET}"; return 98; }
-
+  local url="$1" prefix="${2:-script}" tmp
+  tmp="$(mktemp -p /tmp "${prefix}.XXXXXX")" || { echo "mktemp a échoué"; return 98; }
   if command -v curl >/dev/null 2>&1; then
-    if ! curl -fsSL --retry 3 --retry-delay 1 "$url" -o "$tmp"; then
-      echo -e "${RED}${BOLD}Téléchargement échoué (curl)${RESET}"; rm -f "$tmp"; return 90
-    fi
+    curl -fsSL --retry 3 --retry-delay 1 "$url" -o "$tmp" || { rm -f "$tmp"; return 90; }
   elif command -v wget >/dev/null 2>&1; then
-    if ! wget -q "$url" -O "$tmp"; then
-      echo -e "${RED}${BOLD}Téléchargement échoué (wget)${RESET}"; rm -f "$tmp"; return 90
-    fi
+    wget -q "$url" -O "$tmp" || { rm -f "$tmp"; return 90; }
   else
-    echo -e "${RED}${BOLD}Ni curl ni wget disponible pour télécharger${RESET}"; rm -f "$tmp"; return 91
+    rm -f "$tmp"; return 91
   fi
-
   chmod +x "$tmp"
-  printf "%s" "$tmp"   # retourne le chemin
+  printf "%s" "$tmp"
 }
 
 run_remote() {
   # $1=url  $2=nom_affiché
   local url="$1" label="${2:-script}" tmp rc
-  echo -e "${YELLOW}${BOLD}Téléchargement de ${label}…${RESET}"
-  if ! tmp="$(download_to_tmp "$url" "$label")"; then
-    echo -e "${RED}${BOLD}Échec de préparation pour ${label}${RESET}"
+  tmp="$(download_to_tmp "$url" "$label")" || {
+    msg_box "Erreur" "Échec de téléchargement de ${label}.\nVérifie la connexion réseau."
     return 90
-  fi
-  echo -e "${YELLOW}${BOLD}Exécution de ${label}…${RESET}"
+  }
+
+  clear
+  echo "=== Exécution de ${label} ==="
   bash "$tmp"; rc=$?
   rm -f "$tmp" 2>/dev/null || true
+
   if [[ $rc -eq 0 ]]; then
-    echo -e "${GREEN}${BOLD}✔ ${label} terminé avec succès${RESET}"
+    msg_box "Terminé" "✔ ${label} s'est terminé avec succès."
   else
-    echo -e "${RED}${BOLD}✘ ${label} a échoué (rc=${rc})${RESET}"
-    ls -1 /var/log/new-basics-*.log 2>/dev/null | tail -n 1 | sed "s/^/Dernier log: /"
+    local hint
+    hint="$(ls -1 /var/log/new-basics-*.log 2>/dev/null | tail -n 1)"
+    msg_box "Échec" "✘ ${label} a échoué (rc=$rc).\n${hint:+Dernier log : $hint}"
   fi
   return $rc
 }
 
-draw_menu() {
-  clear
-  echo "                +------------+"
-  echo "                |   ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} :${RESET}   |"
-  echo "       +--------+------------+----------+"
-  echo "       |         ${VIOLET}${BOLD}Installation${RESET}${BOLD} :${RESET}         |"
-  echo "+------+--------------------------------+------+"
-  echo "|  1. Installer docker                         |"
-  echo "|  2. Installer yarn                           |"
-  echo "+----------------------------------------------+"
-  echo ""
-  echo "                +-------------+"
-  echo "                |  ${GREEN}${BOLD}Script${RESET}${BOLD} :${RESET}   |"
-  echo "  +-------------+-------------+----------------+"
-  echo "  | 3. Exécuter 'new.sh'                       |"
-  echo "  |                                            |"
-  echo "  | 4. Exécuter 'speedtest.sh'                 |"
-  echo "  |                                            |"
-  echo "  | 5. Exécuter 'fastfetch.sh'                 |"
-  echo "  |                                            |"
-  echo "  | 6. Exécuter 'pterodactyl-panel-reinstaller'|"
-  echo "  +--------------------------------------------+"
-  echo "  | 7. ${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}            |"
-  echo "  | └ ${YELLOW}${BOLD}OverStyleFR/Pterodactyl-Installer-Menu${RESET}   |"
-  echo "  +--------------------------------------------+"
-  echo "  | 8. ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} SSH ${RESET}                               |"
-  echo "  | └ ${VIOLET}${BOLD}OverStyleFR/AutoScriptBash${RESET}               |"
-  echo "  +-------------+------------+-----------------+"
-  echo "                | ${RED}${BOLD}9. Quitter${RESET} |"
-  echo "                +------------+"
-  echo
+# ------------------------------- Menu loop ------------------------------------
+text_menu() {
+  while true; do
+    clear
+    cat <<'TXT'
++-------------------------------+
+|           MENU (texte)        |
++-------------------------------+
+ 1) Installer docker
+ 2) Installer yarn
+ 3) Exécuter 'new.sh'
+ 4) Exécuter 'speedtest.sh'
+ 5) Exécuter 'fastfetch-install.sh'
+ 6) Exécuter 'pterodactyl-panel-reinstaller'
+ 7) Lancer PterodactylMenu.sh
+ 8) Menu SSH
+ 9) Quitter
+TXT
+    read -rp "Choix (1-9) : " choix
+    case "${choix:-}" in
+      1) run_remote "$DOCKER_URL" "dockerinstall.sh" ;;
+      2) run_remote "$YARN_URL" "yarninstall.sh" ;;
+      3) run_remote "$NEW_URL" "new.sh" ;;
+      4) run_remote "$SPEED_URL" "speedtest.sh" ;;
+      5) run_remote "$FASTFETCH_URL" "fastfetch-install.sh" ;;
+      6) run_remote "$PANEL_REINSTALL_URL" "pterodactylpanelreinstall.sh" ;;
+      7) run_remote "$PTERO_MENU_URL" "PterodactylMenu.sh" ;;
+      8) run_remote "$SSH_MENU_URL" "menu_id.sh" ;;
+      9) exit 0 ;;
+      *) ;;
+    esac
+  done
 }
 
-# --------------------------------- Boucle -------------------------------------
-while true; do
-  draw_menu
-  read -rp "Choisissez une option (1-9) : " choix
-  case "${choix:-}" in
-    1) echo "Installation de Docker." ; run_remote "$DOCKER_URL" "dockerinstall.sh" ; pause ;;
-    2) echo "Installation de Yarn."   ; run_remote "$YARN_URL"   "yarninstall.sh"    ; pause ;;
-    3) echo "Exécution du script 'new.sh'."                     ; run_remote "$NEW_URL"   "new.sh"            ; pause ;;
-    4) echo "Exécution du script 'speedtest.sh'."               ; run_remote "$SPEED_URL" "speedtest.sh"      ; pause ;;
-    5) echo "Exécution du script 'fastfetch-install.sh'."       ; run_remote "$FASTFETCH_URL" "fastfetch-install.sh" ; pause ;;
-    6) echo "Exécution du script 'pterodactyl-panel-reinstaller'."; run_remote "$PANEL_REINSTALL_URL" "pterodactylpanelreinstall.sh" ; pause ;;
-    7) echo -e "${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}" ; run_remote "$PTERO_MENU_URL" "PterodactylMenu.sh" ; pause ;;
-    8) echo -e "${BOLD}${VIOLET}Menu SSH${RESET}"                   ; run_remote "$SSH_MENU_URL"  "menu_id.sh"          ; pause ;;
-    9) echo "Au revoir !" ; exit 0 ;;
-    *) echo -e "${RED}Choix non valide. Veuillez entrer un numéro entre 1 et 9.${RESET}" ; sleep 1 ;;
-  esac
-done
+whip_menu() {
+  local choice ret
+  while true; do
+    choice=$($DIALOG_BIN --backtitle "OverStyleFR • AutoScriptBash" \
+      --title "Menu principal" \
+      --menu "Sélectionne une action :" 20 74 10 \
+      1 "Installer docker" \
+      2 "Installer yarn" \
+      3 "Exécuter 'new.sh'" \
+      4 "Exécuter 'speedtest.sh'" \
+      5 "Exécuter 'fastfetch-install.sh'" \
+      6 "Exécuter 'pterodactyl-panel-reinstaller'" \
+      7 "Exécuter le Pterodactyl Menu" \
+      8 "Menu SSH" \
+      9 "Quitter" \
+      3>&1 1>&2 2>&3)
+    ret=$?
+    [[ $ret -ne 0 ]] && exit 0
+
+    case "$choice" in
+      1) run_remote "$DOCKER_URL" "dockerinstall.sh" ;;
+      2) run_remote "$YARN_URL" "yarninstall.sh" ;;
+      3) run_remote "$NEW_URL" "new.sh" ;;
+      4) run_remote "$SPEED_URL" "speedtest.sh" ;;
+      5) run_remote "$FASTFETCH_URL" "fastfetch-install.sh" ;;
+      6) run_remote "$PANEL_REINSTALL_URL" "pterodactylpanelreinstall.sh" ;;
+      7) run_remote "$PTERO_MENU_URL" "PterodactylMenu.sh" ;;
+      8) run_remote "$SSH_MENU_URL" "menu_id.sh" ;;
+      9) exit 0 ;;
+    esac
+  done
+}
+
+# Lancer le bon menu selon disponibilité
+if [[ -n "$DIALOG_BIN" ]]; then
+  whip_menu
+else
+  echo "Ni 'whiptail' ni 'dialog' détecté — menu texte simple."
+  echo "Conseil (Debian/Ubuntu) : apt-get install -y whiptail"
+  text_menu
+fi
