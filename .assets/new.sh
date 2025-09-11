@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# new.sh — version verbose pour techniciens
-
-################################################################################
-# Options opérateur
-#   --debug     : active bash -x et logs DEBUG
-#   --dry-run   : n'exécute rien (affiche uniquement)
-#   --quiet     : réduit la verbosité à WARN/ERROR
-################################################################################
+# new-basics.sh — version verbose pour techniciens
+# Objectif :
+#   - Détecte la distro et installe : gnupg{,2} lm-sensors curl wget htop nload screen vim git ncdu bpytop rsync man avahi-daemon tree dnsutils net-tools ripgrep
+#   - fastfetch : depuis les dépôts si dispo, sinon script externe (GitHub)
+#   - Remplace le .bashrc de l’utilisateur appelant (SUDO_USER le cas échéant)
+#   - Timezone -> Europe/Paris
+#   - Logs détaillés dans /var/log + affichage verbeux, options --debug --dry-run --quiet
 
 set -euo pipefail
 
@@ -28,24 +27,20 @@ done
 _start_ts=$(date +%s)
 LOG_TS="$(date +%Y%m%d-%H%M%S)"
 LOG_DIR="/var/log"
-LOG_FILE="${LOG_DIR}/new.sh-${LOG_TS}.log"
+LOG_FILE="${LOG_DIR}/new-basics-${LOG_TS}.log"
 mkdir -p "$LOG_DIR"
-# Redirige TOUT vers tee (stdout + fichier)
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-# Couleurs
 BOLD="\e[1m"; DIM="\e[2m"; RED="\e[31m"; YEL="\e[33m"; GRN="\e[32m"; BLU="\e[34m"; C0="\e[0m"
-
 _now() { date "+%Y-%m-%d %H:%M:%S%z"; }
 _since() { local s=$1; printf "%ds" $(( $(date +%s) - s )); }
 
-log()       { printf "%b[%s] [INFO ]%b %s\n" "$GRN" "$(_now)" "$C0" "$*"; }
-warn()      { printf "%b[%s] [WARN ]%b %s\n" "$YEL" "$(_now)" "$C0" "$*"; }
-err()       { printf "%b[%s] [ERROR]%b %s\n" "$RED" "$(_now)" "$C0" "$*"; }
-debug()     { [[ $DEBUG -eq 1 ]] && printf "%b[%s] [DEBUG]%b %s\n" "$BLU" "$(_now)" "$C0" "$*"; }
-logq()      { [[ $QUIET -eq 0 ]] && log "$@" || true; }
+log()   { printf "%b[%s] [INFO ]%b %s\n"  "$GRN" "$(_now)" "$C0" "$*"; }
+warn()  { printf "%b[%s] [WARN ]%b %s\n"  "$YEL" "$(_now)" "$C0" "$*"; }
+err()   { printf "%b[%s] [ERROR]%b %s\n"  "$RED" "$(_now)" "$C0" "$*"; }
+debug() { [[ $DEBUG -eq 1 ]] && printf "%b[%s] [DEBUG]%b %s\n" "$BLU" "$(_now)" "$C0" "$*"; }
+logq()  { [[ $QUIET -eq 0 ]] && log "$@" || true; }
 
-# Affiche et exécute une commande (ou simule en dry-run)
 run() {
   local desc="$1"; shift
   local ts=$(date +%s)
@@ -90,28 +85,29 @@ fi
 log "Distribution détectée: ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
 
 # ============================== Gestionnaire paquets ===========================
-PKG_MGR="" PKG_UPDATE="" PKG_UPGRADE="" PKG_INSTALL="" PKG_QUERY=""
+PKG_MGR="" PKG_UPDATE="" PKG_UPGRADE="" PKG_INSTALL="" PKG_Q_AVAIL=""
 case "$DIST_ID" in
-  debian|ubuntu|linuxmint|pop)
+  debian|ubuntu|linuxmint|pop|kali)
     export DEBIAN_FRONTEND=noninteractive
     PKG_MGR="apt"
     PKG_UPDATE="apt-get update -y"
     PKG_UPGRADE="apt-get -y full-upgrade --autoremove --purge"
     PKG_INSTALL="apt-get install -y"
-    PKG_QUERY="apt-cache policy"
+    # 0 si dispo (Candidate != (none))
+    PKG_Q_AVAIL='sh -c "[[ \$(apt-cache policy \"$1\" 2>/dev/null | awk '\''/Candidate:/ {print \$2}'\'' ) != \"(none)\" ]]" _'
     ;;
   fedora)
     PKG_MGR="dnf"
     PKG_UPDATE="dnf -y makecache"
     PKG_UPGRADE="dnf -y upgrade --refresh"
     PKG_INSTALL="dnf -y install"
-    PKG_QUERY="dnf info"
+    PKG_Q_AVAIL="dnf -q info"
     ;;
   rhel|centos|rocky|almalinux)
     if command -v dnf >/dev/null 2>&1; then
-      PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"; PKG_QUERY="dnf info"
+      PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"; PKG_Q_AVAIL="dnf -q info"
     else
-      PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"; PKG_QUERY="yum info"
+      PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"; PKG_Q_AVAIL="yum -q info"
     fi
     ;;
   arch|artix|manjaro)
@@ -119,31 +115,34 @@ case "$DIST_ID" in
     PKG_UPDATE="pacman -Sy --noconfirm"
     PKG_UPGRADE="pacman -Syu --noconfirm"
     PKG_INSTALL="pacman -S --noconfirm --needed"
-    PKG_QUERY="pacman -Si"
+    PKG_Q_AVAIL="pacman -Si"
     ;;
   opensuse*|sles)
     PKG_MGR="zypper"
     PKG_UPDATE="zypper --non-interactive refresh"
     PKG_UPGRADE="zypper --non-interactive update"
     PKG_INSTALL="zypper --non-interactive install --no-confirm"
-    PKG_QUERY="zypper info"
+    PKG_Q_AVAIL="zypper info"
     ;;
   alpine)
     PKG_MGR="apk"
     PKG_UPDATE="apk update"
     PKG_UPGRADE="apk upgrade"
     PKG_INSTALL="apk add --no-cache"
-    PKG_QUERY="apk info -e"
+    # 0 si apk search -x renvoie un match exact
+    PKG_Q_AVAIL='sh -c "apk search -x \"$1\" >/dev/null 2>&1" _'
     ;;
   *)
     case "$DIST_LIKE" in
       *debian*) DIST_ID="debian"; export DEBIAN_FRONTEND=noninteractive
-        PKG_MGR="apt"; PKG_UPDATE="apt-get update -y"; PKG_UPGRADE="apt-get -y full-upgrade --autoremove --purge"; PKG_INSTALL="apt-get install -y"; PKG_QUERY="apt-cache policy" ;;
-      *rhel*|*fedora*) DIST_ID="rhel"
+        PKG_MGR="apt"; PKG_UPDATE="apt-get update -y"; PKG_UPGRADE="apt-get -y full-upgrade --autoremove --purge"; PKG_INSTALL="apt-get install -y"
+        PKG_Q_AVAIL='sh -c "[[ \$(apt-cache policy \"$1\" 2>/dev/null | awk '\''/Candidate:/ {print \$2}'\'' ) != \"(none)\" ]]" _'
+        ;;
+      *rhel*|*fedora*)
         if command -v dnf >/dev/null 2>&1; then
-          PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"; PKG_QUERY="dnf info"
+          PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"; PKG_Q_AVAIL="dnf -q info"
         else
-          PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"; PKG_QUERY="yum info"
+          PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"; PKG_Q_AVAIL="yum -q info"
         fi ;;
       *)
         err "Distribution non gérée (ID=$DIST_ID ID_LIKE=$DIST_LIKE)"; exit 1 ;;
@@ -151,17 +150,15 @@ case "$DIST_ID" in
     ;;
 esac
 log "Gestionnaire de paquets: $PKG_MGR"
-debug "CMD update='$PKG_UPDATE' upgrade='$PKG_UPGRADE' install='$PKG_INSTALL' query='$PKG_QUERY'"
 
-# ============================== Helpers paquets ================================
 pkg_available() {
   local pkg="$1"
   case "$PKG_MGR" in
-    apt)     $PKG_QUERY "$pkg" >/dev/null 2>&1 ;;
-    dnf|yum) $PKG_QUERY "$pkg" >/dev/null 2>&1 ;;
-    pacman)  $PKG_QUERY "$pkg" >/dev/null 2>&1 ;;
-    zypper)  $PKG_QUERY "$pkg" >/dev/null 2>&1 ;;
-    apk)     $PKG_QUERY "$pkg" >/dev/null 2>&1 ;;
+    apt)     eval "$PKG_Q_AVAIL" -- "$pkg" ;;
+    dnf|yum) $PKG_Q_AVAIL "$pkg" >/dev/null 2>&1 ;;
+    pacman)  $PKG_Q_AVAIL "$pkg" >/dev/null 2>&1 ;;
+    zypper)  $PKG_Q_AVAIL "$pkg" >/dev/null 2>&1 ;;
+    apk)     eval "$PKG_Q_AVAIL" -- "$pkg" ;;
     *)       return 1 ;;
   esac
 }
@@ -196,56 +193,59 @@ run "Upgrade système"  bash -c "$PKG_UPGRADE" || warn "Upgrade partielle/échou
 log "Section MAJ terminée (durée $(_since "$ts_update"))"
 
 # ============================== Mapping paquets ===============================
-# Paquets communs (mappés selon distro)
-PKG_GNUPG=(gnupg gnupg2)      # apt gère les deux; autres distros n'installeront que celui dispo
-PKG_LMSENS=(lm-sensors)
+# Liste demandée : gnupg{,2} lm-sensors curl wget htop nload screen vim git ncdu bpytop rsync man avahi-daemon tree dnsutils net-tools ripgrep
+PKG_GNUPG=(gnupg gnupg2)
+PKG_LMSENS_DEB_RPM=(lm-sensors)
+PKG_LMSENS_ARCH=(lm_sensors)
 PKG_COMMON=(curl wget htop nload screen vim git ncdu rsync tree net-tools ripgrep)
-PKG_MAN_DEB=(man-db)
+PKG_MAN_DEB=(man-db manpages)
+PKG_MAN_RPM=(man-db man-pages)
+PKG_MAN_ARCH=(man-db man-pages)
 PKG_DNS_DEB=(dnsutils)
 PKG_DNS_RPM=(bind-utils)
-PKG_DNS_ARCH_ALP=(bind-tools)
+PKG_DNS_ARCH=(bind)            # Arch fournit dig/nslookup via 'bind'
+PKG_DNS_ALP=(bind-tools)
 PKG_AVAHI_DEB=(avahi-daemon)
-PKG_AVAHI_OTH=(avahi)         # Arch/RPM/openSUSE/Alpine
+PKG_AVAHI_OTH=(avahi avahi-daemon)  # RPM/Arch/openSUSE/Alpine (selon cas)
 PKG_BPY=(bpytop)
-PKG_BTOP=(btop)
+PKG_BTOP=(btop bashtop)        # fallback si bpytop indispo
 
 log "Sélection des paquets selon famille: $DIST_ID ($PKG_MGR)"
-
 case "$PKG_MGR" in
   apt)
     install_if_exists "gnupg"        "${PKG_GNUPG[@]}"
-    install_if_exists "lm-sensors"   "${PKG_LMSENS[@]}"
+    install_if_exists "lm-sensors"   "${PKG_LMSENS_DEB_RPM[@]}"
     install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_MAN_DEB[@]}" "${PKG_DNS_DEB[@]}" "${PKG_AVAHI_DEB[@]}"
-    # bpytop ou btop
     if pkg_available "${PKG_BPY[0]}"; then install_if_exists "monitoring" "${PKG_BPY[@]}"; else install_if_exists "monitoring" "${PKG_BTOP[@]}"; fi
     ;;
   dnf|yum)
     install_if_exists "gnupg"        gnupg
-    install_if_exists "lm-sensors"   "${PKG_LMSENS[@]}"
-    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_DNS_RPM[@]}" "${PKG_AVAHI_OTH[@]}"
+    install_if_exists "lm-sensors"   "${PKG_LMSENS_DEB_RPM[@]}"
+    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}" "${PKG_DNS_RPM[@]}" "${PKG_AVAHI_OTH[@]}"
     if pkg_available "${PKG_BPY[0]}"; then install_if_exists "monitoring" "${PKG_BPY[@]}"; else install_if_exists "monitoring" "${PKG_BTOP[@]}"; fi
     ;;
   pacman)
     install_if_exists "gnupg"        gnupg
-    install_if_exists "lm-sensors"   lm_sensors
-    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_DNS_ARCH_ALP[@]}" "${PKG_AVAHI_OTH[@]}"
+    install_if_exists "lm-sensors"   "${PKG_LMSENS_ARCH[@]}"
+    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_MAN_ARCH[@]}" "${PKG_DNS_ARCH[@]}" "${PKG_AVAHI_OTH[@]}"
     if pkg_available "${PKG_BPY[0]}"; then install_if_exists "monitoring" "${PKG_BPY[@]}"; else install_if_exists "monitoring" "${PKG_BTOP[@]}"; fi
     ;;
   zypper)
-    install_if_exists "gnupg"        gpg2
-    install_if_exists "lm-sensors"   "${PKG_LMSENS[@]}"
-    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_DNS_RPM[@]}" "${PKG_AVAHI_OTH[@]}"
+    install_if_exists "gnupg"        gpg2 gnupg
+    install_if_exists "lm-sensors"   "${PKG_LMSENS_DEB_RPM[@]}"
+    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}" "${PKG_DNS_RPM[@]}" "${PKG_AVAHI_OTH[@]}"
     if pkg_available "${PKG_BPY[0]}"; then install_if_exists "monitoring" "${PKG_BPY[@]}"; else install_if_exists "monitoring" "${PKG_BTOP[@]}"; fi
     ;;
   apk)
     install_if_exists "gnupg"        gnupg
     install_if_exists "lm-sensors"   lm-sensors
-    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_DNS_ARCH_ALP[@]}" "${PKG_AVAHI_OTH[@]}"
+    install_if_exists "commun"       "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}" "${PKG_DNS_ALP[@]}" "${PKG_AVAHI_OTH[@]}"
     if pkg_available "${PKG_BPY[0]}"; then install_if_exists "monitoring" "${PKG_BPY[@]}"; else install_if_exists "monitoring" "${PKG_BTOP[@]}"; fi
     ;;
 esac
 
 # ============================== Fastfetch (repo > fallback) ====================
+FASTFETCH_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/fastfetch-install.sh"
 install_fastfetch() {
   local ts=$(date +%s)
   if pkg_available fastfetch; then
@@ -255,15 +255,14 @@ install_fastfetch() {
     return 0
   fi
   warn "fastfetch non dispo dans les dépôts — fallback script externe"
-  local URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/fastfetch-install.sh"
   if [[ $DRYRUN -eq 1 ]]; then
-    printf "[DRYRUN] bash <(curl -fsSL %s)\n" "$URL"
+    printf "[DRYRUN] bash <(curl -fsSL %s)\n" "$FASTFETCH_URL"
     return 0
   fi
   if command -v curl >/dev/null 2>&1; then
-    run "Installer fastfetch (script)" bash -c "bash <(curl -fsSL \"$URL\")"
+    run "Installer fastfetch (script)" bash -c "bash <(curl -fsSL \"$FASTFETCH_URL\")"
   elif command -v wget >/dev/null 2>&1; then
-    run "Installer fastfetch (script)" bash -c "bash <(wget -qO- \"$URL\")"
+    run "Installer fastfetch (script)" bash -c "bash <(wget -qO- \"$FASTFETCH_URL\")"
   else
     err "Ni curl ni wget disponibles — fastfetch non installé."
     return 1
@@ -276,41 +275,47 @@ install_fastfetch || warn "Installation fastfetch échouée (script)."
 if command -v timedatectl >/dev/null 2>&1; then
   run "Réglage timezone Europe/Paris" timedatectl set-timezone Europe/Paris || warn "Echec réglage timezone"
 else
-  warn "timedatectl indisponible — saut du réglage timezone."
-fi
-
-# ============================== Cron @reboot ===================================
-if command -v crontab >/dev/null 2>&1; then
-  log "Ajout cron @reboot (ping court vers 1.1.1.1)"
-  if [[ $DRYRUN -eq 0 ]]; then
-    (crontab -l 2>/dev/null | grep -v "ping -c 5 1\.1\.1\.1" 2>/dev/null; echo '@reboot /bin/ping -c 5 1.1.1.1 >/dev/null 2>&1 || true') | crontab -
-  else
-    echo "[DRYRUN] crontab append: @reboot /bin/ping -c 5 1.1.1.1 >/dev/null 2>&1 || true"
-  fi
-else
-  warn "crontab indisponible (cron non installÃ© ?)"
+  warn "timedatectl indisponible — tentative via /etc/localtime"
+  ZF="/usr/share/zoneinfo/Europe/Paris"
+  [[ -f "$ZF" ]] && run "Lien /etc/localtime → Europe/Paris" ln -sf "$ZF" /etc/localtime || warn "Zoneinfo non trouvée"
+  [[ -w /etc/timezone ]] && echo "Europe/Paris" >/etc/timezone || true
 fi
 
 # ============================== .bashrc perso =================================
 BRC_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/.bashrc"
-if [[ -f "$HOME/.bashrc" ]]; then
-  run "Backup ~/.bashrc" cp -a "$HOME/.bashrc" "$HOME/.bashrc.bak.$(date +%Y%m%d-%H%M%S)" || true
+TARGET_USER="${SUDO_USER:-root}"
+TARGET_HOME="$(eval echo "~$TARGET_USER")"
+TARGET_RC="$TARGET_HOME/.bashrc"
+BK="$TARGET_HOME/.bashrc.bak.$(date +%Y%m%d-%H%M%S)"
+
+log "Remplacement du .bashrc pour $TARGET_USER ($TARGET_HOME)"
+if [[ -f "$TARGET_RC" ]]; then
+  run "Backup $TARGET_RC" cp -a "$TARGET_RC" "$BK" || true
 fi
 if command -v curl >/dev/null 2>&1; then
-  [[ $DRYRUN -eq 1 ]] && echo "[DRYRUN] curl -fsSL $BRC_URL -o $HOME/.bashrc" || run "Télécharger .bashrc" curl -fsSL "$BRC_URL" -o "$HOME/.bashrc"
+  [[ $DRYRUN -eq 1 ]] && echo "[DRYRUN] curl -fsSL $BRC_URL -o $TARGET_RC" \
+                      || run "Télécharger .bashrc" curl -fsSL "$BRC_URL" -o "$TARGET_RC"
 elif command -v wget >/dev/null 2>&1; then
-  [[ $DRYRUN -eq 1 ]] && echo "[DRYRUN] wget -q $BRC_URL -O $HOME/.bashrc" || run "Télécharger .bashrc" wget -q "$BRC_URL" -O "$HOME/.bashrc"
+  [[ $DRYRUN -eq 1 ]] && echo "[DRYRUN] wget -q $BRC_URL -O $TARGET_RC" \
+                      || run "Télécharger .bashrc" wget -q "$BRC_URL" -O "$TARGET_RC"
 else
   warn "Ni curl ni wget pour récupérer le .bashrc"
 fi
-
-# Recharge seulement en shell interactif bash
-if [[ -n "${PS1:-}" && -n "${BASH_VERSION:-}" && $DRYRUN -eq 0 ]]; then
+# Permissions
+if [[ $DRYRUN -eq 0 && -f "$TARGET_RC" ]]; then
+  run "Chown .bashrc" chown "$TARGET_USER":"$TARGET_USER" "$TARGET_RC" || true
+fi
+# Optionnel: copie pour /etc/skel
+if [[ -d /etc/skel && -f "$TARGET_RC" ]]; then
+  run "Copie .bashrc vers /etc/skel" cp -f "$TARGET_RC" /etc/skel/.bashrc || true
+fi
+# Recharge si session bash interactive
+if [[ -n "${PS1:-}" && -n "${BASH_VERSION:-}" && $DRYRUN -eq 0 && "$TARGET_HOME" == "$HOME" ]]; then
   # shellcheck disable=SC1090
   run "Recharger ~/.bashrc" bash -lc "source \"$HOME/.bashrc\"" || true
 fi
 
-# ============================== Avahi =========================================
+# ============================== Avahi (enable si présent) =====================
 if command -v systemctl >/dev/null 2>&1; then
   if systemctl list-unit-files | grep -q '^avahi-daemon\.service'; then
     run "Activer avahi-daemon" systemctl enable --now avahi-daemon || warn "Impossible d'activer avahi-daemon"
@@ -331,5 +336,4 @@ echo "  - Durée totale    : $(_since "$_start_ts")"
 echo -e "${BOLD}=========================================================================${C0}"
 
 log "Configuration terminée."
-
 # Fin
