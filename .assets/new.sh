@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# new.sh ÃÃÂ¢ bootstrap multi-distros (console propre + logs dÃÃÃÂ©taillÃÃÃÂ©s + rÃÃÃÂ©cap par catÃÃÃÂ©gories)
+# new.sh — bootstrap multi-distros (console propre + logs détaillés + récap par catégories)
 #
 # USAGE:
 #   sudo ./new.sh [OPTIONS]
 #
 # OPTIONS:
 #   --debug      Active le mode debug (bash -x) et les messages [DEBUG]
-#   --dry-run    N'exÃÃÃÂ©cute pas les commandes (simule) ÃÃÂ¢ tout est logguÃÃÃÂ©, console propre
-#   --quiet|-q   RÃÃÃÂ©duit la verbositÃÃÃÂ© console (n'affiche que WARN/ERROR, le log reste complet)
+#   --dry-run    N'exécute pas les commandes (simule) — tout est loggué, console propre
+#   --quiet|-q   Réduit la verbosité console (n'affiche que WARN/ERROR, le log reste complet)
 #
 # COMPORTEMENT:
-#   - DÃÃÃÂ©tecte la distribution / gestionnaire de paquets
-#   - MAJ index + upgrade systÃÃÃÂ¨me
-#   - Installe des paquets communs (curl, wget, htop, ÃÃÂ¢ÃÃÂ¦) + groupes spÃÃÃÂ©cifiques (gnupg, lm-sensors, dnsutilsÃÃÂ¢ÃÃÂ¦)
-#   - Installe fastfetch depuis les dÃÃÃÂ©pÃÃÃÂ´ts si dispo, sinon via script externe
-#   - Remplace le ~/.bashrc (sans rechargement)
-#   - RÃÃÃÂ¨gle la timezone sur Europe/Paris
-#   - Active avahi-daemon si prÃÃÃÂ©sent
-#   - Console : statut dÃÃÂ¢ÃÃÃÂ©tapes uniquement ; Logs : dÃÃÃÂ©tails complets et lisibles (/var/log)
-# ==============================================================================
+#   - Détecte la distribution / gestionnaire de paquets
+#   - MAJ index + upgrade système
+#   - Installe des paquets communs + groupes spécifiques (gnupg, lm-sensors…)
+#   - fastfetch via dépôts si dispo, sinon script externe
+#   - Remplace ~/.bashrc (sans rechargement)
+#   - Timezone Europe/Paris
+#   - Active avahi-daemon si présent
+#   - Console : statut d’étapes uniquement ; Logs : détails complets et lisibles (/var/log)
+=============================================================================
 
 set -euo pipefail
+export LANG="${LANG:-C.UTF-8}"
+export LC_ALL="${LC_ALL:-C.UTF-8}"
 
 # ============================== CLI Flags ======================================
 DEBUG=0; DRYRUN=0; QUIET=0
@@ -40,10 +42,8 @@ _start_ts=$(date +%s)
 LOG_TS="$(date +%Y%m%d-%H%M%S)"
 LOG_DIR="/var/log"
 LOG_FILE="${LOG_DIR}/new-basics-${LOG_TS}.log"
-mkdir -p "$LOG_DIR"
-touch "$LOG_FILE"
+mkdir -p "$LOG_DIR"; : > "$LOG_FILE"
 
-# Couleurs console
 BOLD="\e[1m"; DIM="\e[2m"; RED="\e[31m"; YEL="\e[33m"; GRN="\e[32m"; BLU="\e[34m"; C0="\e[0m"
 _now()   { date "+%Y-%m-%d %H:%M:%S%z"; }
 _since() { local s=$1; printf "%ds" $(( $(date +%s) - s )); }
@@ -84,40 +84,44 @@ run() {
     log "OK: (dry-run) $desc"
     REPORT_SKIP+=("$desc")
     _step_log_block "$desc" "SKIPPED (dry-run)" "0" "$cmd_str" /dev/null
-    return 100  # code spÃÃÃÂ©cial "skip"
+    return 100
   fi
   printf "%b[%s] [EXEC ]%b %s\n" "$BOLD" "$(_now)" "$C0" "$desc"
   if "$@" >"$tmp_out" 2>&1; then
-    local d=$(_since "$ts"); log "OK: $desc (durÃÃÃÂ©e $d)"
+    local d=$(_since "$ts"); log "OK: $desc (durée $d)"
     REPORT_OK+=("$desc")
     _step_log_block "$desc" "OK" "${d%s}" "$cmd_str" "$tmp_out"
-    rm -f "$tmp_out"
-    return 0
+    rm -f "$tmp_out"; return 0
   else
     local rc=$?; local d=$(_since "$ts")
-    err "ECHEC: $desc (durÃÃÃÂ©e $d, rc=$rc)"
+    err "ECHEC: $desc (durée $d, rc=$rc)"
     REPORT_FAIL+=("$desc (rc=$rc)")
     _step_log_block "$desc" "FAIL (rc=$rc)" "${d%s}" "$cmd_str" "$tmp_out"
-    rm -f "$tmp_out"
-    return $rc
+    rm -f "$tmp_out"; return $rc
   fi
 }
 
-# ============================== CatÃÃÃÂ©gories =====================================
-# Status: 0=UNKNOWN, 1=OK, 2=SKIP, 3=FAIL (plus grand = pire)
+# --- Wrappers sûrs (ne quittent pas sous set -e) ---
+safe_run() { set +e; run "$@"; local rc=$?; set -e; return $rc; }
+safe_call() { set +e; "$@"; local rc=$?; set -e; return $rc; }
+
+# ============================== Catégories =====================================
+# 0=UNKNOWN, 1=OK, 2=SKIP, 3=FAIL
 declare -A CAT
 _set_cat() {
-  local key="$1" ; local val="$2"
-  local cur="${CAT[$key]:-0}"
-  (( val > cur )) && CAT["$key"]="$val" || true
+  local k v cur
+  k="$1"; v="${2:-0}"
+  cur="${CAT[$k]:-0}"
+  [[ "$v" -gt "$cur" ]] && CAT["$k"]="$v" || true
 }
-_status_str() {
-  case "$1" in
-    1) printf "%bÃÃÂ¢ OK%b"   "$GRN" "$C0" ;;
-    2) printf "%bÃÃÂ¢ÃÃÂ­ SKIP%b" "$YEL" "$C0" ;;
-    3) printf "%bÃÃÂ¢ FAIL%b" "$RED" "$C0" ;;
-    *) printf "-" ;;
+print_cat_line() {
+  local label="$1" code="${2:-0}" val="-"
+  case "$code" in
+    1) val="${GRN}✓ OK${C0}" ;;
+    2) val="${YEL}⏭ SKIP${C0}" ;;
+    3) val="${RED}✗ FAIL${C0}" ;;
   esac
+  printf "  %-28s : %b\n" "$label" "$val"
 }
 
 # ============================== Root & contexte ================================
@@ -125,8 +129,7 @@ if [[ $EUID -ne 0 ]]; then
   warn "Ce script doit ÃÃÃÂªtre exÃÃÃÂ©cutÃÃÃÂ© en root. Tentative avec sudoÃÃÂ¢ÃÃÂ¦"
   exec sudo -E "$0" "$@"
 fi
-
-trap 'err "Interruption ou erreur (code=$?) ÃÃÂ¢ voir '"$LOG_FILE"'"; exit 1' INT TERM
+trap 'err "Interruption ou erreur (code=$?) — voir '"$LOG_FILE"'"; exit 1' INT TERM
 
 log "Journal complet: $LOG_FILE"
 log "HÃÃÃÂ´te: $(hostname) | Kernel: $(uname -r) | Arch: $(uname -m)"
@@ -137,11 +140,9 @@ DIST_ID=""; DIST_LIKE=""
 if [[ -r /etc/os-release ]]; then
   # shellcheck disable=SC1091
   . /etc/os-release
-  DIST_ID="${ID:-unknown}"
-  DIST_LIKE="${ID_LIKE:-}"
+  DIST_ID="${ID:-unknown}"; DIST_LIKE="${ID_LIKE:-}"
 else
-  err "/etc/os-release introuvable ÃÃÂ¢ abandon."
-  exit 1
+  err "/etc/os-release introuvable — abandon."; exit 1
 fi
 log "Distribution dÃÃÃÂ©tectÃÃÃÂ©e: ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
 
@@ -156,36 +157,19 @@ case "$DIST_ID" in
     PKG_INSTALL="apt-get install -y --no-install-recommends -o Dpkg::Use-Pty=0"
     ;;
   fedora)
-    PKG_MGR="dnf"
-    PKG_UPDATE="dnf -y makecache"
-    PKG_UPGRADE="dnf -y upgrade --refresh"
-    PKG_INSTALL="dnf -y install"
-    ;;
+    PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install" ;;
   rhel|centos|rocky|almalinux)
     if command -v dnf >/dev/null 2>&1; then
       PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"
     else
       PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"
-    fi
-    ;;
+    fi ;;
   arch|artix|manjaro)
-    PKG_MGR="pacman"
-    PKG_UPDATE="pacman -Sy --noconfirm"
-    PKG_UPGRADE="pacman -Syu --noconfirm"
-    PKG_INSTALL="pacman -S --noconfirm --needed"
-    ;;
+    PKG_MGR="pacman"; PKG_UPDATE="pacman -Sy --noconfirm"; PKG_UPGRADE="pacman -Syu --noconfirm"; PKG_INSTALL="pacman -S --noconfirm --needed" ;;
   opensuse*|sles)
-    PKG_MGR="zypper"
-    PKG_UPDATE="zypper --non-interactive refresh"
-    PKG_UPGRADE="zypper --non-interactive update"
-    PKG_INSTALL="zypper --non-interactive install --no-confirm"
-    ;;
+    PKG_MGR="zypper"; PKG_UPDATE="zypper --non-interactive refresh"; PKG_UPGRADE="zypper --non-interactive update"; PKG_INSTALL="zypper --non-interactive install --no-confirm" ;;
   alpine)
-    PKG_MGR="apk"
-    PKG_UPDATE="apk update"
-    PKG_UPGRADE="apk upgrade"
-    PKG_INSTALL="apk add --no-cache"
-    ;;
+    PKG_MGR="apk"; PKG_UPDATE="apk update"; PKG_UPGRADE="apk upgrade"; PKG_INSTALL="apk add --no-cache" ;;
   *)
     case "$DIST_LIKE" in
       *debian*) DIST_ID="debian"; export DEBIAN_FRONTEND=noninteractive
@@ -196,22 +180,17 @@ case "$DIST_ID" in
         else
           PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"
         fi ;;
-      *) err "Distribution non gÃÃÃÂ©rÃÃÃÂ©e (ID=$DIST_ID ID_LIKE=$DIST_LIKE)"; exit 1 ;;
+      *) err "Distribution non gérée (ID=$DIST_ID ID_LIKE=$DIST_LIKE)"; exit 1 ;;
     esac
     ;;
 esac
-log "Gestionnaire de paquets: $PKG_MGR"
-_set_cat "detect_pm" 1  # OK
+log "Gestionnaire de paquets: $PKG_MGR"; _set_cat "detect_pm" 1
 
 # ============================== Helpers paquets ================================
 pkg_available() {
   local pkg="$1"
   case "$PKG_MGR" in
-    apt)
-      local cand
-      cand="$(apt-cache policy "$pkg" 2>/dev/null | awk '/Candidate:/ {print $2}')"
-      [[ -n "${cand:-}" && "${cand:-}" != "(none)" ]]
-      ;;
+    apt)   local cand; cand="$(apt-cache policy "$pkg" 2>/dev/null | awk '/Candidate:/ {print $2}')"; [[ -n "${cand:-}" && "${cand:-}" != "(none)" ]] ;;
     dnf|yum) $PKG_MGR -q info "$pkg" >/dev/null 2>&1 ;;
     pacman)  pacman -Si "$pkg" >/dev/null 2>&1 ;;
     zypper)  zypper info "$pkg" >/dev/null 2>&1 ;;
@@ -230,24 +209,21 @@ install_if_exists() {
   if ((${#ok[@]})); then
     if [[ $DRYRUN -eq 0 ]]; then
       # shellcheck disable=SC2086
-      if run "Installer ($group)" $PKG_INSTALL ${ok[*]}; then
-        return 0
-      else
-        return 1
-      fi
+      run "Installer ($group)" $PKG_INSTALL ${ok[*]}; return $?
     else
-      run "Installer ($group) ÃÃÂ¢ dry-run" echo "$PKG_INSTALL ${ok[*]}" >/dev/null
-      return 100
+      run "Installer ($group) — dry-run" echo "$PKG_INSTALL ${ok[*]}" >/dev/null; return 100
     fi
   else
-    warn "Aucun paquet installable pour le lot: $group"
-    return 100
+    warn "Aucun paquet installable pour le lot: $group"; return 100
   fi
 }
 
-# ============================== MAJ systÃÃÃÂ¨me ===================================
-rc=$(run "MAJ index paquets" bash -lc "$PKG_UPDATE");  (( rc==0 )) && _set_cat "update_index" 1 || _set_cat "update_index" 3
-rc=$(run "Upgrade systÃÃÃÂ¨me"    bash -lc "$PKG_UPGRADE"); (( rc==0 )) && _set_cat "upgrade_system" 1 || _set_cat "upgrade_system" 3
+# ============================== MAJ système ===================================
+safe_run "MAJ index paquets" bash -lc "$PKG_UPDATE"; rc=$?
+case "$rc" in 0) _set_cat "update_index" 1 ;; 100) _set_cat "update_index" 2 ;; *) _set_cat "update_index" 3 ;; esac
+
+safe_run "Upgrade système"  bash -lc "$PKG_UPGRADE"; rc=$?
+case "$rc" in 0) _set_cat "upgrade_system" 1 ;; 100) _set_cat "upgrade_system" 2 ;; *) _set_cat "upgrade_system" 3 ;; esac
 
 # ============================== Mapping paquets ===============================
 PKG_GNUPG=(gnupg gnupg2)
@@ -259,86 +235,71 @@ PKG_MAN_RPM=(man-db man-pages)
 PKG_MAN_ARCH=(man-db man-pages)
 PKG_DNS_DEB=(dnsutils)
 PKG_DNS_RPM=(bind-utils)
-PKG_DNS_ARCH=(bind)       # dig/nslookup
+PKG_DNS_ARCH=(bind)
 PKG_DNS_ALP=(bind-tools)
 PKG_AVAHI_DEB=(avahi-daemon)
 PKG_AVAHI_OTH=(avahi avahi-daemon)
 PKG_BPY=(bpytop)
 PKG_BTOP=(btop bashtop)
 
-log "SÃÃÃÂ©lection des paquets selon famille: $DIST_ID ($PKG_MGR)"
-# Paquets communs (mÃÃÃÂªme nom multi-distros)
+log "Sélection des paquets selon famille: $DIST_ID ($PKG_MGR)"
 case "$PKG_MGR" in
-  apt)    rc=$(install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_DEB[@]}" "${PKG_DNS_DEB[@]}" "${PKG_AVAHI_DEB[@]}") ;;
-  dnf|yum)rc=$(install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}" "${PKG_DNS_RPM[@]}" "${PKG_AVAHI_OTH[@]}") ;;
-  pacman) rc=$(install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_ARCH[@]}" "${PKG_DNS_ARCH[@]}" "${PKG_AVAHI_OTH[@]}") ;;
-  zypper) rc=$(install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}"  "${PKG_DNS_RPM[@]}"  "${PKG_AVAHI_OTH[@]}") ;;
-  apk)    rc=$(install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}"  "${PKG_DNS_ALP[@]}"  "${PKG_AVAHI_OTH[@]}") ;;
+  apt)    safe_call install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_DEB[@]}"  "${PKG_DNS_DEB[@]}"  "${PKG_AVAHI_DEB[@]}"; rc=$? ;;
+  dnf|yum)safe_call install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}"  "${PKG_DNS_RPM[@]}"  "${PKG_AVAHI_OTH[@]}"; rc=$? ;;
+  pacman) safe_call install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_ARCH[@]}" "${PKG_DNS_ARCH[@]}" "${PKG_AVAHI_OTH[@]}"; rc=$? ;;
+  zypper) safe_call install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}"  "${PKG_DNS_RPM[@]}"  "${PKG_AVAHI_OTH[@]}"; rc=$? ;;
+  apk)    safe_call install_if_exists "commun" "${PKG_COMMON[@]}" "${PKG_MAN_RPM[@]}"  "${PKG_DNS_ALP[@]}"  "${PKG_AVAHI_OTH[@]}"; rc=$? ;;
 esac
-case "$rc" in
-  0)   _set_cat "install_common" 1 ;;
-  100) _set_cat "install_common" 2 ;;
-  *)   _set_cat "install_common" 3 ;;
-esac
+case "$rc" in 0) _set_cat "install_common" 1 ;; 100) _set_cat "install_common" 2 ;; *) _set_cat "install_common" 3 ;; esac
 
-# Groupes spÃÃÃÂ©cifiques
-install_if_exists "gnupg"      "${PKG_GNUPG[@]}"      >/dev/null 2>&1 || true
+# Spécifiques (best effort)
 if [[ "$PKG_MGR" == "pacman" ]]; then
-  install_if_exists "lm-sensors" "${PKG_LMSENS_ARCH[@]}" >/dev/null 2>&1 || true
+  safe_call install_if_exists "lm-sensors" "${PKG_LMSENS_ARCH[@]}"   >/dev/null 2>&1 || true
 else
-  install_if_exists "lm-sensors" "${PKG_LMSENS_DEB_RPM[@]}" >/dev/null 2>&1 || true
+  safe_call install_if_exists "lm-sensors" "${PKG_LMSENS_DEB_RPM[@]}" >/dev/null 2>&1 || true
 fi
+safe_call install_if_exists "gnupg"      "${PKG_GNUPG[@]}"            >/dev/null 2>&1 || true
 if pkg_available "${PKG_BPY[0]}"; then
-  install_if_exists "monitoring" "${PKG_BPY[@]}"  >/dev/null 2>&1 || true
+  safe_call install_if_exists "monitoring" "${PKG_BPY[@]}"            >/dev/null 2>&1 || true
 else
-  install_if_exists "monitoring" "${PKG_BTOP[@]}" >/dev/null 2>&1 || true
+  safe_call install_if_exists "monitoring" "${PKG_BTOP[@]}"           >/dev/null 2>&1 || true
 fi
 
-# ============================== Fastfetch (repo > fallback) ====================
+# ============================== Fastfetch ======================================
 FASTFETCH_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/fastfetch-install.sh"
 install_fastfetch() {
   if pkg_available fastfetch; then
-    run "Installer (fastfetch via dÃÃÃÂ©pÃÃÃÂ´ts)" $PKG_INSTALL fastfetch
-    return $?
+    run "Installer (fastfetch via dépôts)" $PKG_INSTALL fastfetch; return $?
   fi
-  warn "fastfetch non dispo dans les dÃÃÃÂ©pÃÃÃÂ´ts ÃÃÂ¢ fallback script externe"
+  warn "fastfetch non dispo dans les dépôts — fallback script externe"
   if [[ $DRYRUN -eq 1 ]]; then
-    run "Installer (fastfetch via script) ÃÃÂ¢ dry-run" echo "bash <(curl -fsSL $FASTFETCH_URL)" >/dev/null
-    return 100
+    run "Installer (fastfetch via script) — dry-run" echo "bash <(curl -fsSL $FASTFETCH_URL)" >/dev/null; return 100
   fi
   if command -v curl >/dev/null 2>&1; then
-    run "Installer (fastfetch via script)" bash -lc "bash <(curl -fsSL \"$FASTFETCH_URL\")"
-    return $?
+    run "Installer (fastfetch via script)" bash -lc "bash <(curl -fsSL \"$FASTFETCH_URL\")"; return $?
   elif command -v wget >/dev/null 2>&1; then
-    run "Installer (fastfetch via script)" bash -lc "bash <(wget -qO- \"$FASTFETCH_URL\")"
-    return $?
+    run "Installer (fastfetch via script)" bash -lc "bash <(wget -qO- \"$FASTFETCH_URL\")"; return $?
   else
-    err "Ni curl ni wget disponibles ÃÃÂ¢ fastfetch non installÃÃÃÂ©."
-    return 1
+    err "Ni curl ni wget disponibles — fastfetch non installé."; return 1
   fi
 }
-rc=$(install_fastfetch)
-case "$rc" in
-  0)   _set_cat "fastfetch" 1 ;;
-  100) _set_cat "fastfetch" 2 ;;
-  *)   _set_cat "fastfetch" 3 ;;
-esac
+safe_call install_fastfetch; rc=$?
+case "$rc" in 0) _set_cat "fastfetch" 1 ;; 100) _set_cat "fastfetch" 2 ;; *) _set_cat "fastfetch" 3 ;; esac
 
 # ============================== Timezone ======================================
 if command -v timedatectl >/dev/null 2>&1; then
-  rc=$(run "RÃÃÃÂ©glage timezone Europe/Paris" timedatectl set-timezone Europe/Paris); 
+  safe_run "Réglage timezone Europe/Paris" timedatectl set-timezone Europe/Paris; rc=$?
 else
-  warn "timedatectl indisponible ÃÃÂ¢ tentative via /etc/localtime"
+  warn "timedatectl indisponible — tentative via /etc/localtime"
   ZF="/usr/share/zoneinfo/Europe/Paris"
   if [[ -f "$ZF" ]]; then
-    rc=$(run "Lien /etc/localtime ÃÃÂ¢ Europe/Paris" ln -sf "$ZF" /etc/localtime || true; echo)
+    safe_run "Lien /etc/localtime → Europe/Paris" ln -sf "$ZF" /etc/localtime; rc=$?
     [[ -w /etc/timezone ]] && echo "Europe/Paris" >/etc/timezone || true
   else
-    rc=1
-    err "Zoneinfo non trouvÃÃÃÂ©e"
+    rc=1; err "Zoneinfo non trouvée"
   fi
 fi
-(( rc==0 || rc==100 )) && _set_cat "timezone" $(( rc==100 ? 2 : 1 )) || _set_cat "timezone" 3
+case "$rc" in 0) _set_cat "timezone" 1 ;; 100) _set_cat "timezone" 2 ;; *) _set_cat "timezone" 3 ;; esac
 
 # ============================== .bashrc (sans reload) ==========================
 BRC_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/.bashrc"
@@ -349,64 +310,61 @@ BK="$TARGET_HOME/.bashrc.bak.$(date +%Y%m%d-%H%M%S)"
 
 BRC_RC=0
 log "Remplacement du .bashrc pour $TARGET_USER ($TARGET_HOME)"
-[[ -f "$TARGET_RC" ]] && { run "Backup $TARGET_RC" cp -a "$TARGET_RC" "$BK" || BRC_RC=1; } || true
+[[ -f "$TARGET_RC" ]] && { safe_run "Backup $TARGET_RC" cp -a "$TARGET_RC" "$BK" || BRC_RC=1; } || true
 if command -v curl >/dev/null 2>&1; then
-  if ! run "TÃÃÃÂ©lÃÃÃÂ©charger .bashrc" curl -fsSL "$BRC_URL" -o "$TARGET_RC"; then BRC_RC=1; fi
+  safe_run "Télécharger .bashrc" curl -fsSL "$BRC_URL" -o "$TARGET_RC" || BRC_RC=1
 elif command -v wget >/dev/null 2>&1; then
-  if ! run "TÃÃÃÂ©lÃÃÃÂ©charger .bashrc" wget -q "$BRC_URL" -O "$TARGET_RC"; then BRC_RC=1; fi
+  safe_run "Télécharger .bashrc" wget -q "$BRC_URL" -O "$TARGET_RC" || BRC_RC=1
 else
-  warn "Ni curl ni wget pour rÃÃÃÂ©cupÃÃÃÂ©rer le .bashrc"; BRC_RC=1
+  warn "Ni curl ni wget pour récupérer le .bashrc"; BRC_RC=1
 fi
-[[ -f "$TARGET_RC" ]] && { run "Chown .bashrc" chown "$TARGET_USER":"$TARGET_USER" "$TARGET_RC" || BRC_RC=1; } || true
+[[ -f "$TARGET_RC" ]] && safe_run "Chown .bashrc" chown "$TARGET_USER":"$TARGET_USER" "$TARGET_RC" || true
 if [[ -d /etc/skel && -f "$TARGET_RC" ]]; then
-  run "Copie .bashrc vers /etc/skel" cp -f "$TARGET_RC" /etc/skel/.bashrc || BRC_RC=1
+  safe_run "Copie .bashrc vers /etc/skel" cp -f "$TARGET_RC" /etc/skel/.bashrc || BRC_RC=1
 fi
-(( BRC_RC==0 )) && _set_cat "bashrc" 1 || _set_cat "bashrc" 3
-# NOTE: rechargement du .bashrc volontairement dÃÃÃÂ©sactivÃÃÃÂ©
+if [[ "$BRC_RC" -eq 0 ]]; then _set_cat "bashrc" 1; else _set_cat "bashrc" 3; fi
 
-# ============================== Avahi (enable si prÃÃÃÂ©sent) =====================
+# ============================== Avahi (enable si présent) =====================
 if command -v systemctl >/dev/null 2>&1; then
   if systemctl list-unit-files | grep -q '^avahi-daemon\.service'; then
-    rc=$(run "Activer avahi-daemon" systemctl enable --now avahi-daemon)
-    (( rc==0 || rc==100 )) && _set_cat "avahi" $(( rc==100 ? 2 : 1 )) || _set_cat "avahi" 3
+    safe_run "Activer avahi-daemon" systemctl enable --now avahi-daemon; rc=$?
+    case "$rc" in 0) _set_cat "avahi" 1 ;; 100) _set_cat "avahi" 2 ;; *) _set_cat "avahi" 3 ;; esac
   else
-    debug "Service avahi-daemon non prÃÃÃÂ©sent ÃÃÂ¢ ignorÃÃÃÂ©."
-    _set_cat "avahi" 2
+    debug "Service avahi-daemon non présent — ignoré."; _set_cat "avahi" 2
   fi
 else
-  debug "systemctl indisponible ÃÃÂ¢ probablement sans systemd."
-  _set_cat "avahi" 2
+  debug "systemctl indisponible — probablement sans systemd."; _set_cat "avahi" 2
 fi
 
-# ============================== RÃÃÃÂ©capitulatif (catÃÃÃÂ©gories) =====================
+# ============================== Récapitulatif (catégories) =====================
 echo
-echo -e "${BOLD}============================= RÃCAPITULATIF =============================${C0}"
+printf "%b============================= RÉCAPITULATIF =============================%b\n" "$BOLD" "$C0"
 echo "  Journal : $LOG_FILE"
 echo "  Distro  : ID=$DIST_ID | LIKE=$DIST_LIKE | PM=$PKG_MGR"
-echo "  DurÃÃÃÂ©e   : $(_since "$_start_ts")"
+echo "  Durée   : $(_since "$_start_ts")"
 echo
-echo -e "${BOLD}CatÃÃÃÂ©gories:${C0}"
-printf "  %-28s : %s\n" "DÃÃÃÂ©tection gestionnaire"       "$(_status_str "${CAT[detect_pm]:-0}")"
-printf "  %-28s : %s\n" "MAJ index paquets"           "$(_status_str "${CAT[update_index]:-0}")"
-printf "  %-28s : %s\n" "Upgrade systÃÃÃÂ¨me"              "$(_status_str "${CAT[upgrade_system]:-0}")"
-printf "  %-28s : %s\n" "Paquets communs"              "$(_status_str "${CAT[install_common]:-0}")"
-printf "  %-28s : %s\n" "Fastfetch"                     "$(_status_str "${CAT[fastfetch]:-0}")"
-printf "  %-28s : %s\n" "Timezone (Europe/Paris)"       "$(_status_str "${CAT[timezone]:-0}")"
-printf "  %-28s : %s\n" ".bashrc (dÃÃÃÂ©ploiement)"         "$(_status_str "${CAT[bashrc]:-0}")"
-printf "  %-28s : %s\n" "Avahi (enable si prÃÃÃÂ©sent)"     "$(_status_str "${CAT[avahi]:-0}")"
+echo -e "${BOLD}Catégories:${C0}"
+print_cat_line "Détection gestionnaire"     "${CAT[detect_pm]:-0}"
+print_cat_line "MAJ index paquets"          "${CAT[update_index]:-0}"
+print_cat_line "Upgrade système"            "${CAT[upgrade_system]:-0}"
+print_cat_line "Paquets communs"            "${CAT[install_common]:-0}"
+print_cat_line "Fastfetch"                   "${CAT[fastfetch]:-0}"
+print_cat_line "Timezone (Europe/Paris)"     "${CAT[timezone]:-0}"
+print_cat_line ".bashrc (déploiement)"       "${CAT[bashrc]:-0}"
+print_cat_line "Avahi (enable si présent)"   "${CAT[avahi]:-0}"
 echo
-echo -e "${BOLD}DÃÃÃÂ©tail ÃÃÃÂ©tapes:${C0}"
-echo "  Ãtapes OK   : ${#REPORT_OK[@]}"
-for s in "${REPORT_OK[@]}";  do echo "    ${GRN}ÃÃÂ¢${C0} $s"; done
+echo -e "${BOLD}Détail étapes:${C0}"
+echo "  Étapes OK   : ${#REPORT_OK[@]}"
+for s in "${REPORT_OK[@]}";  do printf "    %b✓%b %s\n" "$GRN" "$C0" "$s"; done
 echo
-echo "  Ãtapes FAIL : ${#REPORT_FAIL[@]}"
-for s in "${REPORT_FAIL[@]}"; do echo "    ${RED}ÃÃÂ¢${C0} $s"; done
+echo "  Étapes FAIL : ${#REPORT_FAIL[@]}"
+for s in "${REPORT_FAIL[@]}"; do printf "    %b✗%b %s\n" "$RED" "$C0" "$s"; done
 if [[ $DRYRUN -eq 1 || ${#REPORT_SKIP[@]} -gt 0 ]]; then
   echo
-  echo "  Ãtapes SKIP : ${#REPORT_SKIP[@]}"
-  for s in "${REPORT_SKIP[@]}"; do echo "    ${YEL}ÃÃÂ¢ÃÃÂ­${C0} $s"; done
+  echo "  Étapes SKIP : ${#REPORT_SKIP[@]}"
+  for s in "${REPORT_SKIP[@]}"; do printf "    %b⏭%b %s\n" "$YEL" "$C0" "$s"; done
 fi
-echo -e "${BOLD}=========================================================================${C0}"
+printf "%b=========================================================================%b\n" "$BOLD" "$C0"
 
-log "Configuration terminÃÃÃÂ©e."
+log "Configuration terminée."
 # Fin
