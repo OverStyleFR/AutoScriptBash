@@ -19,7 +19,7 @@
 #   - Timezone Europe/Paris
 #   - Active avahi-daemon si présent
 #   - Console : statut d’étapes uniquement ; Logs : détails complets et lisibles (/var/log)
-# ==============================================================================
+=============================================================================
 
 set -euo pipefail
 export LANG="${LANG:-C.UTF-8}"
@@ -126,16 +126,16 @@ print_cat_line() {
 
 # ============================== Root & contexte ================================
 if [[ $EUID -ne 0 ]]; then
-  warn "Ce script doit être exécuté en root. Tentative avec sudo…"
+  warn "Ce script doit ÃÃÃÂªtre exÃÃÃÂ©cutÃÃÃÂ© en root. Tentative avec sudoÃÃÂ¢ÃÃÂ¦"
   exec sudo -E "$0" "$@"
 fi
 trap 'err "Interruption ou erreur (code=$?) — voir '"$LOG_FILE"'"; exit 1' INT TERM
 
 log "Journal complet: $LOG_FILE"
-log "Hôte: $(hostname) | Kernel: $(uname -r) | Arch: $(uname -m)"
+log "HÃÃÃÂ´te: $(hostname) | Kernel: $(uname -r) | Arch: $(uname -m)"
 log "Shell: $SHELL | DEBUG=$DEBUG | DRYRUN=$DRYRUN | QUIET=$QUIET"
 
-# ============================== Détection distro ===============================
+# ============================== DÃÃÃÂ©tection distro ===============================
 DIST_ID=""; DIST_LIKE=""
 if [[ -r /etc/os-release ]]; then
   # shellcheck disable=SC1091
@@ -144,7 +144,7 @@ if [[ -r /etc/os-release ]]; then
 else
   err "/etc/os-release introuvable — abandon."; exit 1
 fi
-log "Distribution détectée: ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
+log "Distribution dÃÃÃÂ©tectÃÃÃÂ©e: ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
 
 # ============================== Gestionnaire paquets ===========================
 PKG_MGR="" PKG_UPDATE="" PKG_UPGRADE="" PKG_INSTALL=""
