@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# menu.sh — TUI façon raspi-config (whiptail/dialog) avec fallback menu texte
+# menu.sh — TUI whiptail/dialog avec fallback Bash (ASCII style OverStyleFR)
 #
 # USAGE :
 #   bash <(curl -fsSL https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu.sh)
 #   bash <(curl -fsSL https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu.sh) --bash
 #
 # OPTIONS :
-#   --bash   Force le menu texte (désactive whiptail/dialog même s'ils sont présents)
+#   --bash   Force le menu Bash (ASCII), même si whiptail/dialog sont présents
 # ==============================================================================
 
 set -uo pipefail
@@ -20,9 +20,18 @@ for arg in "$@"; do
   esac
 done
 
+# ------------------------------- Couleurs -------------------------------------
+if command -v tput >/dev/null 2>&1 && [[ -t 1 ]]; then
+  GREEN="$(tput setaf 2)"; RED="$(tput setaf 1)"; BLUE="$(tput setaf 4)"
+  VIOLET="$(tput setaf 5)"; YELLOW="$(tput setaf 3)"
+  BOLD="$(tput bold)"; RESET="$(tput sgr0)"
+else
+  GREEN=""; RED=""; BLUE=""; VIOLET=""; YELLOW=""; BOLD=""; RESET=""
+fi
+
 # ------------------------------ Vérif root ------------------------------------
 if [[ ${EUID:-$UID} -ne 0 ]]; then
-  echo "Ce script doit être exécuté en root."
+  echo -e "${RED}${BOLD}Ce script doit être exécuté en tant que root.${RESET}"
   exec sudo -E bash "$0" "$@"
 fi
 
@@ -35,17 +44,6 @@ FASTFETCH_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main
 PANEL_REINSTALL_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/pterodactylpanelreinstall.sh"
 PTERO_MENU_URL="https://raw.githubusercontent.com/OverStyleFR/Pterodactyl-Installer-Menu/main/PterodactylMenu.sh"
 SSH_MENU_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/menu_id.sh"
-
-# ------------------------------ Backend UI ------------------------------------
-DIALOG_BIN=""
-if [[ $FORCE_BASH -eq 0 ]]; then
-  if command -v whiptail >/dev/null 2>&1; then
-    DIALOG_BIN="whiptail"
-  elif command -v dialog >/dev/null 2>&1; then
-    DIALOG_BIN="dialog"
-  fi
-fi
-# Si DIALOG_BIN vide -> on utilisera le menu texte
 
 # ------------------------------ Options new.sh --------------------------------
 NEW_F_DEBUG=0
@@ -87,18 +85,32 @@ download_to_tmp() {
 run_remote() {
   local url="$1" label="${2:-script}"; shift 2 || true
   local args=( "$@" ) tmp rc
-  tmp="$(download_to_tmp "$url" "$label")" || { echo "Échec de téléchargement de ${label}."; return 90; }
-  clear; echo "=== Exécution de ${label} ==="
+  echo -e "${YELLOW}${BOLD}Téléchargement de ${label}…${RESET}"
+  if ! tmp="$(download_to_tmp "$url" "$label")"; then
+    echo -e "${RED}${BOLD}Échec de téléchargement.${RESET}"; return 90
+  fi
+  echo -e "${YELLOW}${BOLD}Exécution de ${label}…${RESET}"
   bash "$tmp" "${args[@]}"; rc=$?
   rm -f "$tmp" 2>/dev/null || true
-  if [[ $rc -ne 0 ]]; then
-    local hint; hint="$(ls -1 /var/log/new-basics-*.log 2>/dev/null | tail -n 1)"
-    [[ -n "$hint" ]] && echo "Dernier log : $hint"
+  if [[ $rc -eq 0 ]]; then
+    echo -e "${GREEN}${BOLD}✔ ${label} terminé avec succès${RESET}"
+  else
+    echo -e "${RED}${BOLD}✘ ${label} a échoué (rc=$rc)${RESET}"
+    ls -1 /var/log/new-basics-*.log 2>/dev/null | tail -n 1 | sed "s/^/Dernier log : /"
   fi
   return $rc
 }
 
 # =============================== UI: WHIPTAIL/DIALOG ==========================
+DIALOG_BIN=""
+if [[ $FORCE_BASH -eq 0 ]]; then
+  if command -v whiptail >/dev/null 2>&1; then
+    DIALOG_BIN="whiptail"
+  elif command -v dialog >/dev/null 2>&1; then
+    DIALOG_BIN="dialog"
+  fi
+fi
+
 ui_menu() {
   local title="$1" prompt="$2" h="$3" w="$4" mh="$5"; shift 5
   local status out
@@ -230,87 +242,54 @@ main_menu_ui() {
   done
 }
 
-# =============================== UI: MENU TEXTE ===============================
-pause() { read -rp $'\n(Entrée pour continuer) ' _; }
-adv_menu_text() {
-  echo; echo "=== Options avancées (new.sh) ==="
-  echo "Actuelles : $(flags_inline_if_any)"
-  read -rp "Activer --debug ? (y/N) " r; [[ "$r" =~ ^[Yy]$ ]] && NEW_F_DEBUG=1 || NEW_F_DEBUG=0
-  read -rp "Activer --dry-run ? (y/N) " r; [[ "$r" =~ ^[Yy]$ ]] && NEW_F_DRYRUN=1 || NEW_F_DRYRUN=0
-  read -rp "Activer --quiet ? (y/N) " r; [[ "$r" =~ ^[Yy]$ ]] && NEW_F_QUIET=1 || NEW_F_QUIET=0
-  read -rp "Autres arguments (ligne unique) : " NEW_EXTRA_ARGS
-  echo "Mis à jour : $(flags_inline_if_any)"; pause
+# =============================== UI: MENU BASH (ASCII) ========================
+pause() { read -n 1 -s -r -p "Appuyez sur une touche pour retourner au menu..." ; echo; }
+
+draw_ascii_menu() {
+  clear
+  echo "                +------------+"
+  echo "                |   ${BOLD}${VIOLET}M${GREEN}e${YELLOW}n${BLUE}u${RESET}${BOLD} :${RESET}   |"
+  echo "       +--------+------------+----------+"
+  echo "       |         ${VIOLET}${BOLD}Installation${RESET}${BOLD} :${RESET}         |"
+  echo "+------+--------------------------------+------+"
+  echo "|  1. Installer docker                         |"
+  echo "|  2. Installer yarn                           |"
+  echo "+----------------------------------------------+"
+  echo ""
+  echo "                +-------------+"
+  echo "                |  ${GREEN}${BOLD}Script${RESET}${BOLD} :${RESET}   |"
+  echo "  +-------------+-------------+----------------+"
+  echo "  | 3. Exécuter 'new.sh'                       |"
+  echo "  | 4. Exécuter 'speedtest.sh'                 |"
+  echo "  | 5. Exécuter 'fastfetch-install.sh'         |"
+  echo "  | 6. Exécuter 'pterodactyl-panel-reinstaller'|"
+  echo "  +--------------------------------------------+"
+  echo "  | 7. ${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}            |"
+  echo "  | └ ${YELLOW}${BOLD}OverStyleFR/Pterodactyl-Installer-Menu${RESET}   |"
+  echo "  +--------------------------------------------+"
+  echo "  | 8. ${BOLD}${VIOLET}Menu SSH ${RESET}                               |"
+  echo "  | └ ${VIOLET}${BOLD}OverStyleFR/AutoScriptBash${RESET}               |"
+  echo "  +-------------+------------+-----------------+"
+  echo "                | ${RED}${BOLD}9. Quitter${RESET} |"
+  echo "                +------------+"
+  echo
 }
-submenu_installation_text() {
+
+main_menu_ascii() {
   while true; do
-    clear; cat <<'TXT'
-=== Installation ===
- 1) Installer docker
- 2) Installer yarn
- r) Retour
-TXT
-    read -rp "Choix : " c
-    case "$c" in
-      1) run_remote "$DOCKER_URL" "dockerinstall.sh" ; pause ;;
-      2) run_remote "$YARN_URL" "yarninstall.sh"     ; pause ;;
-      r|R) return 0 ;;
-    esac
-  done
-}
-submenu_scripts_text() {
-  while true; do
-    clear; echo "=== Scripts ==="
-    echo "Flags new.sh : $(flags_inline_if_any)"
-    cat <<'TXT'
- 1) Exécuter 'new.sh'
- 2) Exécuter 'speedtest.sh'
- 3) Exécuter 'fastfetch-install.sh'
- 4) Exécuter 'pterodactyl-panel-reinstaller'
- r) Retour
-TXT
-    read -rp "Choix : " c
-    case "$c" in
-      1) build_new_flags; run_remote "$NEW_URL" "new.sh" "${NEW_FLAGS[@]}"; pause ;;
-      2) run_remote "$SPEED_URL" "speedtest.sh"                         ; pause ;;
-      3) run_remote "$FASTFETCH_URL" "fastfetch-install.sh"             ; pause ;;
-      4) run_remote "$PANEL_REINSTALL_URL" "pterodactylpanelreinstall.sh"; pause ;;
-      r|R) return 0 ;;
-    esac
-  done
-}
-submenu_autres_text() {
-  while true; do
-    clear; cat <<'TXT'
-=== Autres menus ===
- 1) Pterodactyl Menu
- 2) Menu SSH
- r) Retour
-TXT
-    read -rp "Choix : " c
-    case "$c" in
-      1) run_remote "$PTERO_MENU_URL" "PterodactylMenu.sh" ; pause ;;
-      2) run_remote "$SSH_MENU_URL"  "menu_id.sh"          ; pause ;;
-      r|R) return 0 ;;
-    esac
-  done
-}
-main_menu_text() {
-  while true; do
-    clear; cat <<'TXT'
-=========== MENU ===========
- 1) Installation
- 2) Scripts
- 3) Autres menus
- 4) Options avancées (new.sh)
- q) Quitter
-TXT
-    read -rp "Choix : " c
-    case "$c" in
-      1) submenu_installation_text ;;
-      2) submenu_scripts_text ;;
-      3) submenu_autres_text ;;
-      4) adv_menu_text ;;
-      q|Q) exit 0 ;;
+    draw_ascii_menu
+    read -rp "Choisissez une option (1-9) : " choix
+    case "${choix:-}" in
+      1) echo "Installation de Docker."                        ; run_remote "$DOCKER_URL" "dockerinstall.sh" ; pause ;;
+      2) echo "Installation de Yarn."                          ; run_remote "$YARN_URL"   "yarninstall.sh"  ; pause ;;
+      3) echo "Exécution du script 'new.sh'."                  ; build_new_flags; run_remote "$NEW_URL" "new.sh" "${NEW_FLAGS[@]}"; pause ;;
+      4) echo "Exécution du script 'speedtest.sh'."            ; run_remote "$SPEED_URL" "speedtest.sh"    ; pause ;;
+      5) echo "Exécution du script 'fastfetch-install.sh'."    ; run_remote "$FASTFETCH_URL" "fastfetch-install.sh" ; pause ;;
+      6) echo "Exécution du script 'pterodactyl-panel-reinstaller'." ; run_remote "$PANEL_REINSTALL_URL" "pterodactylpanelreinstall.sh" ; pause ;;
+      7) echo -e "${BLUE}${BOLD}Exécuter le Pterodactyl Menu${RESET}" ; run_remote "$PTERO_MENU_URL" "PterodactylMenu.sh" ; pause ;;
+      8) echo -e "${BOLD}${VIOLET}Menu SSH${RESET}"                    ; run_remote "$SSH_MENU_URL"  "menu_id.sh"         ; pause ;;
+      9) echo "Au revoir !" ; exit 0 ;;
+      *) echo -e "${RED}Choix non valide. Veuillez entrer un numéro entre 1 et 9.${RESET}"; sleep 1 ;;
     esac
   done
 }
@@ -319,6 +298,6 @@ TXT
 if [[ -n "$DIALOG_BIN" ]]; then
   main_menu_ui
 else
-  echo "(UI texte : whiptail/dialog indisponibles ou --bash forcé)"
-  main_menu_text
+  echo "(UI Bash : whiptail/dialog indisponibles ou --bash forcé)"
+  main_menu_ascii
 fi
