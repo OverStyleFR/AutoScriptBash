@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
-# new-basics.sh â version verbose pour techniciens
-# Objectif :
-#   - DÃ©tecte la distro et installe : gnupg{,2} lm-sensors curl wget htop nload screen vim git ncdu bpytop rsync man avahi-daemon tree dnsutils net-tools ripgrep
-#   - fastfetch : depuis les dÃ©pÃ´ts si dispo, sinon script externe (GitHub)
-#   - Remplace le .bashrc de lâutilisateur appelant (SUDO_USER le cas Ã©chÃ©ant)
-#   - Timezone -> Europe/Paris
-#   - Logs dÃ©taillÃ©s dans /var/log + affichage verbeux, options --debug --dry-run --quiet
-
+# new.sh — bootstrap multi-distros (console propre + logs détaillés)
 set -euo pipefail
 
 # ============================== CLI Flags ======================================
-DEBUG=0
-DRYRUN=0
-QUIET=0
+DEBUG=0; DRYRUN=0; QUIET=0
 for arg in "$@"; do
   case "${arg:-}" in
     --debug) DEBUG=1 ;;
@@ -23,55 +14,89 @@ for arg in "$@"; do
 done
 [[ $DEBUG -eq 1 ]] && set -x
 
-# ============================== Logging ========================================
+# ============================== Log setup ======================================
 _start_ts=$(date +%s)
 LOG_TS="$(date +%Y%m%d-%H%M%S)"
 LOG_DIR="/var/log"
 LOG_FILE="${LOG_DIR}/new-basics-${LOG_TS}.log"
 mkdir -p "$LOG_DIR"
-exec > >(tee -a "$LOG_FILE") 2>&1
+touch "$LOG_FILE"
 
+# Couleurs console (log fichier = sans couleurs)
 BOLD="\e[1m"; DIM="\e[2m"; RED="\e[31m"; YEL="\e[33m"; GRN="\e[32m"; BLU="\e[34m"; C0="\e[0m"
-_now() { date "+%Y-%m-%d %H:%M:%S%z"; }
+_now()   { date "+%Y-%m-%d %H:%M:%S%z"; }
 _since() { local s=$1; printf "%ds" $(( $(date +%s) - s )); }
+_strip() { sed -E 's/\r//g; s/\x1B\[[0-9;]*[A-Za-z]//g'; }
 
-log()   { printf "%b[%s] [INFO ]%b %s\n"  "$GRN" "$(_now)" "$C0" "$*"; }
-warn()  { printf "%b[%s] [WARN ]%b %s\n"  "$YEL" "$(_now)" "$C0" "$*"; }
-err()   { printf "%b[%s] [ERROR]%b %s\n"  "$RED" "$(_now)" "$C0" "$*"; }
-debug() { [[ $DEBUG -eq 1 ]] && printf "%b[%s] [DEBUG]%b %s\n" "$BLU" "$(_now)" "$C0" "$*"; }
-logq()  { [[ $QUIET -eq 0 ]] && log "$@" || true; }
+_logfile()  { printf "%s\n" "$*" | _strip >> "$LOG_FILE"; }
+log()       { [[ $QUIET -eq 0 ]] && printf "%b[%s] [INFO ]%b %s\n"  "$GRN" "$(_now)" "$C0" "$*"; _logfile "[$(_now)] [INFO ] $*"; }
+warn()      { printf "%b[%s] [WARN ]%b %s\n"  "$YEL" "$(_now)" "$C0" "$*"; _logfile "[$(_now)] [WARN ] $*"; }
+err()       { printf "%b[%s] [ERROR]%b %s\n"  "$RED" "$(_now)" "$C0" "$*"; _logfile "[$(_now)] [ERROR] $*"; }
+debug()     { [[ $DEBUG -eq 1 ]] && { printf "%b[%s] [DEBUG]%b %s\n" "$BLU" "$(_now)" "$C0" "$*"; _logfile "[$(_now)] [DEBUG] $*"; } || true; }
+
+# ============================== Steps reporting ================================
+declare -a REPORT_OK=() REPORT_FAIL=() REPORT_SKIP=()
+
+_step_log_block() {
+  # $1 desc, $2 status, $3 dur_secs, $4 cmd, $5 tmpfile (stdout+stderr)
+  {
+    echo
+    echo "============================== STEP ================================="
+    echo "Time     : $(_now)"
+    echo "Step     : $1"
+    echo "Status   : $2"
+    echo "Duration : ${3}s"
+    echo "Command  : $4"
+    echo "------------------------------ OUTPUT -------------------------------"
+    [[ -f "$5" ]] && _strip < "$5" || echo "(no output)"
+    echo "=========================== END OF STEP ============================="
+  } >> "$LOG_FILE"
+}
 
 run() {
   local desc="$1"; shift
   local ts=$(date +%s)
+  local cmd_str="$*"
+  local tmp_out
+  tmp_out="$(mktemp)"
   if [[ $DRYRUN -eq 1 ]]; then
-    printf "%b[%s] [DRYRN]%b %s â %s\n" "$DIM" "$(_now)" "$C0" "$desc" "$*"
+    printf "%b[%s] [EXEC ]%b %s\n" "$BOLD" "$(_now)" "$C0" "$desc"
+    log "OK: (dry-run) $desc"
+    REPORT_SKIP+=("$desc")
+    _step_log_block "$desc" "SKIPPED (dry-run)" "0" "$cmd_str" /dev/null
     return 0
   fi
   printf "%b[%s] [EXEC ]%b %s\n" "$BOLD" "$(_now)" "$C0" "$desc"
-  debug "Commande: $*"
-  if "$@"; then
-    log "OK: $desc (durÃ©e $(_since "$ts"))"
+  # Exécute la commande, sortie capturée UNIQUEMENT dans le log
+  if "$@" >"$tmp_out" 2>&1; then
+    local d=$(_since "$ts"); log "OK: $desc (durée $d)"
+    REPORT_OK+=("$desc")
+    _step_log_block "$desc" "OK" "${d%s}" "$cmd_str" "$tmp_out"
+    rm -f "$tmp_out"
     return 0
   else
-    err "ECHEC: $desc (durÃ©e $(_since "$ts"))"
-    return 1
+    local rc=$?; local d=$(_since "$ts")
+    err "ECHEC: $desc (durée $d, rc=$rc)"
+    REPORT_FAIL+=("$desc (rc=$rc)") 
+    _step_log_block "$desc" "FAIL (rc=$rc)" "${d%s}" "$cmd_str" "$tmp_out"
+    rm -f "$tmp_out"
+    return $rc
   fi
 }
 
 # ============================== Root & contexte ================================
 if [[ $EUID -ne 0 ]]; then
-  warn "Ce script doit Ãªtre exÃ©cutÃ© en root. Tentative avec sudoâ¦"
+  warn "Ce script doit être exécuté en root. Tentative avec sudo…"
   exec sudo -E "$0" "$@"
 fi
 
-trap 'err "Interruption ou erreur (code=$?) â voir $LOG_FILE"; exit 1' INT TERM
+trap 'err "Interruption ou erreur (code=$?) — voir '"$LOG_FILE"'"; exit 1' INT TERM
 
 log "Journal complet: $LOG_FILE"
-log "HÃ´te: $(hostname) | Kernel: $(uname -r) | Arch: $(uname -m)"
+log "Hôte: $(hostname) | Kernel: $(uname -r) | Arch: $(uname -m)"
 log "Shell: $SHELL | DEBUG=$DEBUG | DRYRUN=$DRYRUN | QUIET=$QUIET"
 
-# ============================== DÃ©tection distro ===============================
+# ============================== Détection distro ===============================
 DIST_ID=""; DIST_LIKE=""
 if [[ -r /etc/os-release ]]; then
   # shellcheck disable=SC1091
@@ -79,35 +104,32 @@ if [[ -r /etc/os-release ]]; then
   DIST_ID="${ID:-unknown}"
   DIST_LIKE="${ID_LIKE:-}"
 else
-  err "/etc/os-release introuvable â abandon."
+  err "/etc/os-release introuvable — abandon."
   exit 1
 fi
-log "Distribution dÃ©tectÃ©e: ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
+log "Distribution détectée: ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
 
 # ============================== Gestionnaire paquets ===========================
-PKG_MGR="" PKG_UPDATE="" PKG_UPGRADE="" PKG_INSTALL="" PKG_Q_AVAIL=""
+PKG_MGR="" PKG_UPDATE="" PKG_UPGRADE="" PKG_INSTALL=""
 case "$DIST_ID" in
   debian|ubuntu|linuxmint|pop|kali)
     export DEBIAN_FRONTEND=noninteractive
     PKG_MGR="apt"
     PKG_UPDATE="apt-get update -y"
     PKG_UPGRADE="apt-get -y full-upgrade --autoremove --purge"
-    PKG_INSTALL="apt-get install -y"
-    # 0 si dispo (Candidate != (none))
-    PKG_Q_AVAIL='sh -c "[[ \$(apt-cache policy \"$1\" 2>/dev/null | awk '\''/Candidate:/ {print \$2}'\'' ) != \"(none)\" ]]" _'
+    PKG_INSTALL="apt-get install -y --no-install-recommends -o Dpkg::Use-Pty=0"
     ;;
   fedora)
     PKG_MGR="dnf"
     PKG_UPDATE="dnf -y makecache"
     PKG_UPGRADE="dnf -y upgrade --refresh"
     PKG_INSTALL="dnf -y install"
-    PKG_Q_AVAIL="dnf -q info"
     ;;
   rhel|centos|rocky|almalinux)
     if command -v dnf >/dev/null 2>&1; then
-      PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"; PKG_Q_AVAIL="dnf -q info"
+      PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"
     else
-      PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"; PKG_Q_AVAIL="yum -q info"
+      PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"
     fi
     ;;
   arch|artix|manjaro)
@@ -115,50 +137,48 @@ case "$DIST_ID" in
     PKG_UPDATE="pacman -Sy --noconfirm"
     PKG_UPGRADE="pacman -Syu --noconfirm"
     PKG_INSTALL="pacman -S --noconfirm --needed"
-    PKG_Q_AVAIL="pacman -Si"
     ;;
   opensuse*|sles)
     PKG_MGR="zypper"
     PKG_UPDATE="zypper --non-interactive refresh"
     PKG_UPGRADE="zypper --non-interactive update"
     PKG_INSTALL="zypper --non-interactive install --no-confirm"
-    PKG_Q_AVAIL="zypper info"
     ;;
   alpine)
     PKG_MGR="apk"
     PKG_UPDATE="apk update"
     PKG_UPGRADE="apk upgrade"
     PKG_INSTALL="apk add --no-cache"
-    # 0 si apk search -x renvoie un match exact
-    PKG_Q_AVAIL='sh -c "apk search -x \"$1\" >/dev/null 2>&1" _'
     ;;
   *)
     case "$DIST_LIKE" in
       *debian*) DIST_ID="debian"; export DEBIAN_FRONTEND=noninteractive
-        PKG_MGR="apt"; PKG_UPDATE="apt-get update -y"; PKG_UPGRADE="apt-get -y full-upgrade --autoremove --purge"; PKG_INSTALL="apt-get install -y"
-        PKG_Q_AVAIL='sh -c "[[ \$(apt-cache policy \"$1\" 2>/dev/null | awk '\''/Candidate:/ {print \$2}'\'' ) != \"(none)\" ]]" _'
-        ;;
+        PKG_MGR="apt"; PKG_UPDATE="apt-get update -y"; PKG_UPGRADE="apt-get -y full-upgrade --autoremove --purge"; PKG_INSTALL="apt-get install -y --no-install-recommends -o Dpkg::Use-Pty=0" ;;
       *rhel*|*fedora*)
         if command -v dnf >/dev/null 2>&1; then
-          PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"; PKG_Q_AVAIL="dnf -q info"
+          PKG_MGR="dnf"; PKG_UPDATE="dnf -y makecache"; PKG_UPGRADE="dnf -y upgrade --refresh"; PKG_INSTALL="dnf -y install"
         else
-          PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"; PKG_Q_AVAIL="yum -q info"
+          PKG_MGR="yum"; PKG_UPDATE="yum -y makecache"; PKG_UPGRADE="yum -y update"; PKG_INSTALL="yum -y install"
         fi ;;
-      *)
-        err "Distribution non gÃ©rÃ©e (ID=$DIST_ID ID_LIKE=$DIST_LIKE)"; exit 1 ;;
+      *) err "Distribution non gérée (ID=$DIST_ID ID_LIKE=$DIST_LIKE)"; exit 1 ;;
     esac
     ;;
 esac
 log "Gestionnaire de paquets: $PKG_MGR"
 
+# ============================== Helpers paquets ================================
 pkg_available() {
   local pkg="$1"
   case "$PKG_MGR" in
-    apt)     eval "$PKG_Q_AVAIL" -- "$pkg" ;;
-    dnf|yum) $PKG_Q_AVAIL "$pkg" >/dev/null 2>&1 ;;
-    pacman)  $PKG_Q_AVAIL "$pkg" >/dev/null 2>&1 ;;
-    zypper)  $PKG_Q_AVAIL "$pkg" >/dev/null 2>&1 ;;
-    apk)     eval "$PKG_Q_AVAIL" -- "$pkg" ;;
+    apt)
+      local cand
+      cand="$(apt-cache policy "$pkg" 2>/dev/null | awk '/Candidate:/ {print $2}')"
+      [[ -n "${cand:-}" && "${cand:-}" != "(none)" ]]
+      ;;
+    dnf|yum) $PKG_MGR -q info "$pkg" >/dev/null 2>&1 ;;
+    pacman)  pacman -Si "$pkg" >/dev/null 2>&1 ;;
+    zypper)  zypper info "$pkg" >/dev/null 2>&1 ;;
+    apk)     apk info -e "$pkg" >/dev/null 2>&1 || apk search -x "$pkg" >/dev/null 2>&1 ;;
     *)       return 1 ;;
   esac
 }
@@ -171,12 +191,11 @@ install_if_exists() {
     if pkg_available "$p"; then ok+=("$p"); else skip+=("$p"); fi
   done
   if ((${#ok[@]})); then
-    logq "Installation ($group): ${ok[*]}"
     if [[ $DRYRUN -eq 0 ]]; then
       # shellcheck disable=SC2086
       run "Installer ($group)" $PKG_INSTALL ${ok[*]} || warn "Erreur installation ($group)"
     else
-      printf "[DRYRUN] %s %s\n" "$PKG_INSTALL" "${ok[*]}"
+      run "Installer ($group) — dry-run" echo "$PKG_INSTALL ${ok[*]}" >/dev/null
     fi
   else
     warn "Aucun paquet installable pour le lot: $group"
@@ -186,14 +205,13 @@ install_if_exists() {
   fi
 }
 
-# ============================== MAJ systÃ¨me ===================================
+# ============================== MAJ système ===================================
 ts_update=$(date +%s)
-run "MAJ index paquets" bash -c "$PKG_UPDATE" || warn "Update partielle/Ã©chouÃ©e"
-run "Upgrade systÃ¨me"  bash -c "$PKG_UPGRADE" || warn "Upgrade partielle/Ã©chouÃ©e"
-log "Section MAJ terminÃ©e (durÃ©e $(_since "$ts_update"))"
+run "MAJ index paquets" bash -lc "$PKG_UPDATE" || warn "Update partielle/échouée"
+run "Upgrade système"  bash -lc "$PKG_UPGRADE" || warn "Upgrade partielle/échouée"
+log "Section MAJ terminée (durée $(_since "$ts_update"))"
 
 # ============================== Mapping paquets ===============================
-# Liste demandÃ©e : gnupg{,2} lm-sensors curl wget htop nload screen vim git ncdu bpytop rsync man avahi-daemon tree dnsutils net-tools ripgrep
 PKG_GNUPG=(gnupg gnupg2)
 PKG_LMSENS_DEB_RPM=(lm-sensors)
 PKG_LMSENS_ARCH=(lm_sensors)
@@ -203,14 +221,14 @@ PKG_MAN_RPM=(man-db man-pages)
 PKG_MAN_ARCH=(man-db man-pages)
 PKG_DNS_DEB=(dnsutils)
 PKG_DNS_RPM=(bind-utils)
-PKG_DNS_ARCH=(bind)            # Arch fournit dig/nslookup via 'bind'
+PKG_DNS_ARCH=(bind)       # dig/nslookup
 PKG_DNS_ALP=(bind-tools)
 PKG_AVAHI_DEB=(avahi-daemon)
-PKG_AVAHI_OTH=(avahi avahi-daemon)  # RPM/Arch/openSUSE/Alpine (selon cas)
+PKG_AVAHI_OTH=(avahi avahi-daemon)
 PKG_BPY=(bpytop)
-PKG_BTOP=(btop bashtop)        # fallback si bpytop indispo
+PKG_BTOP=(btop bashtop)
 
-log "SÃ©lection des paquets selon famille: $DIST_ID ($PKG_MGR)"
+log "Sélection des paquets selon famille: $DIST_ID ($PKG_MGR)"
 case "$PKG_MGR" in
   apt)
     install_if_exists "gnupg"        "${PKG_GNUPG[@]}"
@@ -249,39 +267,36 @@ FASTFETCH_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main
 install_fastfetch() {
   local ts=$(date +%s)
   if pkg_available fastfetch; then
-    log "fastfetch disponible dans les dÃ©pÃ´ts: installation via $PKG_MGR"
-    install_if_exists "fastfetch" fastfetch
-    log "fastfetch installÃ© via dÃ©pÃ´ts (durÃ©e $(_since "$ts"))"
+    run "Installer (fastfetch via dépôts)" $PKG_INSTALL fastfetch
     return 0
   fi
-  warn "fastfetch non dispo dans les dÃ©pÃ´ts â fallback script externe"
+  warn "fastfetch non dispo dans les dépôts — fallback script externe"
   if [[ $DRYRUN -eq 1 ]]; then
-    printf "[DRYRUN] bash <(curl -fsSL %s)\n" "$FASTFETCH_URL"
+    run "Installer (fastfetch via script) — dry-run" echo "bash <(curl -fsSL $FASTFETCH_URL)" >/dev/null
     return 0
   fi
   if command -v curl >/dev/null 2>&1; then
-    run "Installer fastfetch (script)" bash -c "bash <(curl -fsSL \"$FASTFETCH_URL\")"
+    run "Installer (fastfetch via script)" bash -lc "bash <(curl -fsSL \"$FASTFETCH_URL\")"
   elif command -v wget >/dev/null 2>&1; then
-    run "Installer fastfetch (script)" bash -c "bash <(wget -qO- \"$FASTFETCH_URL\")"
+    run "Installer (fastfetch via script)" bash -lc "bash <(wget -qO- \"$FASTFETCH_URL\")"
   else
-    err "Ni curl ni wget disponibles â fastfetch non installÃ©."
+    err "Ni curl ni wget disponibles — fastfetch non installé."
     return 1
   fi
-  log "fastfetch via script terminÃ© (durÃ©e $(_since "$ts"))"
 }
-install_fastfetch || warn "Installation fastfetch Ã©chouÃ©e (script)."
+install_fastfetch || warn "Installation fastfetch échouée (script)."
 
 # ============================== Timezone ======================================
 if command -v timedatectl >/dev/null 2>&1; then
-  run "RÃ©glage timezone Europe/Paris" timedatectl set-timezone Europe/Paris || warn "Echec rÃ©glage timezone"
+  run "Réglage timezone Europe/Paris" timedatectl set-timezone Europe/Paris || warn "Echec réglage timezone"
 else
-  warn "timedatectl indisponible â tentative via /etc/localtime"
+  warn "timedatectl indisponible — tentative via /etc/localtime"
   ZF="/usr/share/zoneinfo/Europe/Paris"
-  [[ -f "$ZF" ]] && run "Lien /etc/localtime â Europe/Paris" ln -sf "$ZF" /etc/localtime || warn "Zoneinfo non trouvÃ©e"
+  [[ -f "$ZF" ]] && run "Lien /etc/localtime → Europe/Paris" ln -sf "$ZF" /etc/localtime || warn "Zoneinfo non trouvée"
   [[ -w /etc/timezone ]] && echo "Europe/Paris" >/etc/timezone || true
 fi
 
-# ============================== .bashrc perso =================================
+# ============================== .bashrc (sans reload) ==========================
 BRC_URL="https://raw.githubusercontent.com/OverStyleFR/AutoScriptBash/main/.assets/.bashrc"
 TARGET_USER="${SUDO_USER:-root}"
 TARGET_HOME="$(eval echo "~$TARGET_USER")"
@@ -289,51 +304,51 @@ TARGET_RC="$TARGET_HOME/.bashrc"
 BK="$TARGET_HOME/.bashrc.bak.$(date +%Y%m%d-%H%M%S)"
 
 log "Remplacement du .bashrc pour $TARGET_USER ($TARGET_HOME)"
-if [[ -f "$TARGET_RC" ]]; then
-  run "Backup $TARGET_RC" cp -a "$TARGET_RC" "$BK" || true
-fi
+[[ -f "$TARGET_RC" ]] && run "Backup $TARGET_RC" cp -a "$TARGET_RC" "$BK" || true
 if command -v curl >/dev/null 2>&1; then
-  [[ $DRYRUN -eq 1 ]] && echo "[DRYRUN] curl -fsSL $BRC_URL -o $TARGET_RC" \
-                      || run "TÃ©lÃ©charger .bashrc" curl -fsSL "$BRC_URL" -o "$TARGET_RC"
+  [[ $DRYRUN -eq 1 ]] && run "Télécharger .bashrc — dry-run" echo "curl -fsSL $BRC_URL -o $TARGET_RC" >/dev/null \
+                      || run "Télécharger .bashrc" curl -fsSL "$BRC_URL" -o "$TARGET_RC"
 elif command -v wget >/dev/null 2>&1; then
-  [[ $DRYRUN -eq 1 ]] && echo "[DRYRUN] wget -q $BRC_URL -O $TARGET_RC" \
-                      || run "TÃ©lÃ©charger .bashrc" wget -q "$BRC_URL" -O "$TARGET_RC"
+  [[ $DRYRUN -eq 1 ]] && run "Télécharger .bashrc — dry-run" echo "wget -q $BRC_URL -O $TARGET_RC" >/dev/null \
+                      || run "Télécharger .bashrc" wget -q "$BRC_URL" -O "$TARGET_RC"
 else
-  warn "Ni curl ni wget pour rÃ©cupÃ©rer le .bashrc"
+  warn "Ni curl ni wget pour récupérer le .bashrc"
 fi
-# Permissions
-if [[ $DRYRUN -eq 0 && -f "$TARGET_RC" ]]; then
-  run "Chown .bashrc" chown "$TARGET_USER":"$TARGET_USER" "$TARGET_RC" || true
-fi
-# Optionnel: copie pour /etc/skel
+[[ $DRYRUN -eq 0 && -f "$TARGET_RC" ]] && run "Chown .bashrc" chown "$TARGET_USER":"$TARGET_USER" "$TARGET_RC" || true
 if [[ -d /etc/skel && -f "$TARGET_RC" ]]; then
   run "Copie .bashrc vers /etc/skel" cp -f "$TARGET_RC" /etc/skel/.bashrc || true
 fi
-# Recharge si session bash interactive
-if [[ -n "${PS1:-}" && -n "${BASH_VERSION:-}" && $DRYRUN -eq 0 && "$TARGET_HOME" == "$HOME" ]]; then
-  # shellcheck disable=SC1090
-  run "Recharger ~/.bashrc" bash -lc "source \"$HOME/.bashrc\"" || true
-fi
+# NOTE: rechargement du .bashrc volontairement désactivé
 
-# ============================== Avahi (enable si prÃ©sent) =====================
+# ============================== Avahi (enable si présent) =====================
 if command -v systemctl >/dev/null 2>&1; then
   if systemctl list-unit-files | grep -q '^avahi-daemon\.service'; then
     run "Activer avahi-daemon" systemctl enable --now avahi-daemon || warn "Impossible d'activer avahi-daemon"
   else
-    debug "Service avahi-daemon non prÃ©sent â ignorÃ©."
+    debug "Service avahi-daemon non présent — ignoré."
   fi
 else
-  debug "systemctl indisponible â probablement sans systemd."
+  debug "systemctl indisponible — probablement sans systemd."
 fi
 
-# ============================== RÃ©capitulatif =================================
+# ============================== Récapitulatif =================================
 echo
-echo -e "${BOLD}============================= RÃCAPITULATIF =============================${C0}"
-echo "  - Journal complet : $LOG_FILE"
-echo "  - Distro          : ID=$DIST_ID | LIKE=$DIST_LIKE | PKG_MGR=$PKG_MGR"
-echo "  - DEBUG           : $DEBUG | DRYRUN=$DRYRUN | QUIET=$QUIET"
-echo "  - DurÃ©e totale    : $(_since "$_start_ts")"
+echo -e "${BOLD}============================= RÉCAPITULATIF =============================${C0}"
+echo "  - Journal : $LOG_FILE"
+echo "  - Distro  : ID=$DIST_ID | LIKE=$DIST_LIKE | PM=$PKG_MGR"
+echo "  - Durée   : $(_since "$_start_ts")"
+echo
+echo "Étapes OK   : ${#REPORT_OK[@]}"
+for s in "${REPORT_OK[@]}"; do echo "  ✓ $s"; done
+echo
+echo "Étapes FAIL : ${#REPORT_FAIL[@]}"
+for s in "${REPORT_FAIL[@]}"; do echo "  ✗ $s"; done
+if [[ $DRYRUN -eq 1 ]]; then
+  echo
+  echo "Étapes SKIP : ${#REPORT_SKIP[@]} (dry-run)"
+  for s in "${REPORT_SKIP[@]}"; do echo "  ⏭ $s"; done
+fi
 echo -e "${BOLD}=========================================================================${C0}"
 
-log "Configuration terminÃ©e."
+log "Configuration terminée."
 # Fin
