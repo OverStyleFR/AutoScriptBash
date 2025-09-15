@@ -135,7 +135,7 @@ log "Journal complet: $LOG_FILE"
 log "HÃÃÃÂ´te: $(hostname) | Kernel: $(uname -r) | Arch: $(uname -m)"
 log "Shell: $SHELL | DEBUG=$DEBUG | DRYRUN=$DRYRUN | QUIET=$QUIET"
 
-# ============================== DÃÃÃÂ©tection distro ===============================
+# ============================== D�tection distro ===============================
 DIST_ID=""; DIST_LIKE=""
 if [[ -r /etc/os-release ]]; then
   # shellcheck disable=SC1091
@@ -144,7 +144,7 @@ if [[ -r /etc/os-release ]]; then
 else
   err "/etc/os-release introuvable — abandon."; exit 1
 fi
-log "Distribution dÃÃÃÂ©tectÃÃÃÂ©e: ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
+log "Distribution de linux d�tect� : ID=${DIST_ID} | ID_LIKE=${DIST_LIKE}"
 
 # ============================== Gestionnaire paquets ===========================
 PKG_MGR="" PKG_UPDATE="" PKG_UPGRADE="" PKG_INSTALL=""
