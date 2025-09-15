@@ -333,12 +333,12 @@ if command -v systemctl >/dev/null 2>&1; then
     debug "Service avahi-daemon non présent — ignoré."; _set_cat "avahi" 2
   fi
 else
-  debug "systemctl indisponible — probablement sans systemd."; _set_cat "avahi" 2
+  debug "systemctl indisponible �tait probablement sans systemd."; _set_cat "avahi" 2
 fi
 
 # ============================== Récapitulatif (catégories) =====================
 echo
-printf "%b============================= RÉCAPITULATIF =============================%b\n" "$BOLD" "$C0"
+printf "%b============================= RECAPITULATIF =============================%b\n" "$BOLD" "$C0"
 echo "  Journal : $LOG_FILE"
 echo "  Distro  : ID=$DIST_ID | LIKE=$DIST_LIKE | PM=$PKG_MGR"
 echo "  Durée   : $(_since "$_start_ts")"
