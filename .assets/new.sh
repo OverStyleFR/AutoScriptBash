@@ -19,7 +19,7 @@
 #   - Timezone Europe/Paris
 #   - Active avahi-daemon si present
 #   - Console : statut d'etapes uniquement ; Logs : details complets et lisibles (/var/log)
-=============================================================================
+# ===============================================================================
 
 set -euo pipefail
 export LANG="${LANG:-C.UTF-8}"
