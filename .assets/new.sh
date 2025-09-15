@@ -126,7 +126,7 @@ print_cat_line() {
 
 # ============================== Root & contexte ================================
 if [[ $EUID -ne 0 ]]; then
-  warn "Ce script doit ÃÃÃÂªtre exÃÃÃÂ©cutÃÃÃÂ© en root. Tentative avec sudoÃÃÂ¢ÃÃÂ¦"
+  warn "Ce script doit �tre ex�cuté en root. Tentative avec sud :"
   exec sudo -E "$0" "$@"
 fi
 trap 'err "Interruption ou erreur (code=$?) — voir '"$LOG_FILE"'"; exit 1' INT TERM
