@@ -229,7 +229,7 @@ case "$rc" in 0) _set_cat "upgrade_system" 1 ;; 100) _set_cat "upgrade_system" 2
 PKG_GNUPG=(gnupg gnupg2)
 PKG_LMSENS_DEB_RPM=(lm-sensors)
 PKG_LMSENS_ARCH=(lm_sensors)
-PKG_COMMON=(curl wget htop nload screen vim git ncdu rsync tree net-tools ripgrep)
+PKG_COMMON=(curl wget htop nload screen vim git ncdu rsync tree net-tools ripgrep nvim)
 PKG_MAN_DEB=(man-db manpages)
 PKG_MAN_RPM=(man-db man-pages)
 PKG_MAN_ARCH=(man-db man-pages)
