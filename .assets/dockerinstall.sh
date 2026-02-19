@@ -65,6 +65,20 @@ echo ""
 
 sleep 1
 
+# Vérification du dossier /etc/apt/sources.list.d #
+if [ ! -d "/etc/apt/sources.list.d" ]; then
+    echo "${RED}${BOLD}Le dossier /etc/apt/sources.list.d n'existe pas. Création en cours...${RESET}"
+    mkdir -p /etc/apt/sources.list.d
+    if [ $? -eq 0 ]; then
+        echo "${GREEN}${BOLD}Dossier /etc/apt/sources.list.d créé avec succès.${RESET}"
+    else
+        echo "${RED}${BOLD}Erreur lors de la création du dossier /etc/apt/sources.list.d. Abandon.${RESET}"
+        exit 1
+    fi
+else
+    echo "${GREEN}Le dossier /etc/apt/sources.list.d existe.${RESET}"
+fi
+
 echo \
   "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
